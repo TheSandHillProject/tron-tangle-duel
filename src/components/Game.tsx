@@ -4,16 +4,18 @@ import { toast } from 'sonner';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import { 
-  Direction, GameState, Position, Player,
+  Direction, GameState, Position, Player, Token, Bullet,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
   checkCollision, arePositionsEqual, resetRound, resetGame,
-  isValidDirectionChange
+  isValidDirectionChange, generateRandomPosition, updateBulletPosition,
+  checkBulletTrailCollision, removeTrailSegment
 } from '@/utils/gameUtils';
 
 const GAME_SPEED = 100; // milliseconds between game updates
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 30;
 const CELL_SIZE = 15;
+const BULLET_SPEED = 2; // Bullets move faster than players
 
 const Game: React.FC = () => {
   // Game state
@@ -22,7 +24,7 @@ const Game: React.FC = () => {
   );
   
   // Game loop timer reference
-  const gameLoopRef = useRef<number | null>(null);
+  const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
   // Canvas reference
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -40,29 +42,41 @@ const Game: React.FC = () => {
     const newPlayers = [...players];
     
     // Player 1 controls (WASD)
-    if (!player1.isAlive) return;
-    
-    if (e.key === 'w' && isValidDirectionChange(player1.direction, 'UP')) {
-      newPlayers[0] = { ...player1, nextDirection: 'UP' };
-    } else if (e.key === 's' && isValidDirectionChange(player1.direction, 'DOWN')) {
-      newPlayers[0] = { ...player1, nextDirection: 'DOWN' };
-    } else if (e.key === 'a' && isValidDirectionChange(player1.direction, 'LEFT')) {
-      newPlayers[0] = { ...player1, nextDirection: 'LEFT' };
-    } else if (e.key === 'd' && isValidDirectionChange(player1.direction, 'RIGHT')) {
-      newPlayers[0] = { ...player1, nextDirection: 'RIGHT' };
+    if (player1.isAlive) {
+      if (e.key === 'w' && isValidDirectionChange(player1.direction, 'UP')) {
+        newPlayers[0] = { ...player1, nextDirection: 'UP' };
+      } else if (e.key === 's' && isValidDirectionChange(player1.direction, 'DOWN')) {
+        newPlayers[0] = { ...player1, nextDirection: 'DOWN' };
+      } else if (e.key === 'a' && isValidDirectionChange(player1.direction, 'LEFT')) {
+        newPlayers[0] = { ...player1, nextDirection: 'LEFT' };
+      } else if (e.key === 'd' && isValidDirectionChange(player1.direction, 'RIGHT')) {
+        newPlayers[0] = { ...player1, nextDirection: 'RIGHT' };
+      } 
+      // Player 1 shoot (1 key)
+      else if (e.key === '1' && player1.bullets > 0) {
+        // Create bullet from player 1's position going in their direction
+        handlePlayerShoot(1);
+        return;
+      }
     }
     
     // Player 2 controls (Arrow keys)
-    if (!player2.isAlive) return;
-    
-    if (e.key === 'ArrowUp' && isValidDirectionChange(player2.direction, 'UP')) {
-      newPlayers[1] = { ...player2, nextDirection: 'UP' };
-    } else if (e.key === 'ArrowDown' && isValidDirectionChange(player2.direction, 'DOWN')) {
-      newPlayers[1] = { ...player2, nextDirection: 'DOWN' };
-    } else if (e.key === 'ArrowLeft' && isValidDirectionChange(player2.direction, 'LEFT')) {
-      newPlayers[1] = { ...player2, nextDirection: 'LEFT' };
-    } else if (e.key === 'ArrowRight' && isValidDirectionChange(player2.direction, 'RIGHT')) {
-      newPlayers[1] = { ...player2, nextDirection: 'RIGHT' };
+    if (player2.isAlive) {
+      if (e.key === 'ArrowUp' && isValidDirectionChange(player2.direction, 'UP')) {
+        newPlayers[1] = { ...player2, nextDirection: 'UP' };
+      } else if (e.key === 'ArrowDown' && isValidDirectionChange(player2.direction, 'DOWN')) {
+        newPlayers[1] = { ...player2, nextDirection: 'DOWN' };
+      } else if (e.key === 'ArrowLeft' && isValidDirectionChange(player2.direction, 'LEFT')) {
+        newPlayers[1] = { ...player2, nextDirection: 'LEFT' };
+      } else if (e.key === 'ArrowRight' && isValidDirectionChange(player2.direction, 'RIGHT')) {
+        newPlayers[1] = { ...player2, nextDirection: 'RIGHT' };
+      } 
+      // Player 2 shoot (/ key)
+      else if (e.key === '/' && player2.bullets > 0) {
+        // Create bullet from player 2's position going in their direction
+        handlePlayerShoot(2);
+        return;
+      }
     }
     
     // Pause game on spacebar
@@ -81,6 +95,44 @@ const Game: React.FC = () => {
     }));
   }, [gameState]);
   
+  // Handle player shooting
+  const handlePlayerShoot = (playerId: number) => {
+    setGameState(prevState => {
+      const playerIndex = playerId - 1;
+      const player = prevState.players[playerIndex];
+      
+      // Only shoot if player has bullets
+      if (player.bullets <= 0) return prevState;
+      
+      // Create a copy of the players array
+      const newPlayers = [...prevState.players];
+      
+      // Create a new bullet
+      const newBullet: Bullet = {
+        position: { ...player.position },
+        direction: player.direction,
+        playerId: player.id,
+        active: true
+      };
+      
+      // Reduce player's bullet count
+      newPlayers[playerIndex] = {
+        ...player,
+        bullets: player.bullets - 1
+      };
+      
+      // Add the bullet to the game state
+      return {
+        ...prevState,
+        players: newPlayers,
+        bullets: [...prevState.bullets, newBullet]
+      };
+    });
+    
+    // Show toast
+    toast.info(`Player ${playerId} fired a shot!`);
+  };
+  
   // Initialize game
   useEffect(() => {
     // Add keyboard event listener
@@ -90,7 +142,7 @@ const Game: React.FC = () => {
     startGameLoop();
     
     // Display initial toast
-    toast.info("Player 1: WASD keys | Player 2: Arrow keys | Space: Pause", {
+    toast.info("Player 1: WASD to move, 1 to shoot | Player 2: Arrow keys to move, / to shoot", {
       duration: 5000,
     });
     
@@ -125,8 +177,45 @@ const Game: React.FC = () => {
   const updateGame = () => {
     setGameState(prevState => {
       // Clone the current state
-      const { players, gridSize } = prevState;
+      const { players, gridSize, tokens, bullets } = prevState;
       const newPlayers = [...players].map(player => ({ ...player }));
+      const newTokens = [...tokens];
+      const newBullets = [...bullets];
+      const occupiedPositions: Position[] = [];
+      
+      // Check for token collection
+      for (let i = 0; i < newPlayers.length; i++) {
+        if (!newPlayers[i].isAlive) continue;
+        
+        // Check if player collected any tokens
+        for (let j = 0; j < newTokens.length; j++) {
+          if (!newTokens[j].collected && arePositionsEqual(newPlayers[i].position, newTokens[j].position)) {
+            // Collect token (mark as collected)
+            newTokens[j].collected = true;
+            
+            // Increment player's bullet count
+            newPlayers[i].bullets += 1;
+            
+            // Show toast
+            toast.success(`Player ${i + 1} collected a token! Bullets: ${newPlayers[i].bullets}`);
+            
+            // Generate a new token
+            const allPositions = [
+              ...newPlayers.map(p => p.position),
+              ...newPlayers.flatMap(p => p.trail),
+              ...newTokens.filter(t => !t.collected).map(t => t.position)
+            ];
+            
+            const newTokenPosition = generateRandomPosition(gridSize, allPositions);
+            newTokens.push({
+              position: newTokenPosition,
+              collected: false
+            });
+            
+            break;
+          }
+        }
+      }
       
       // Update each player
       for (let i = 0; i < newPlayers.length; i++) {
@@ -134,6 +223,7 @@ const Game: React.FC = () => {
         
         // Add current position to trail
         newPlayers[i].trail = [...newPlayers[i].trail, { ...newPlayers[i].position }];
+        occupiedPositions.push({ ...newPlayers[i].position });
         
         // Calculate new position
         const newPosition = updatePlayerPosition(newPlayers[i]);
@@ -168,6 +258,66 @@ const Game: React.FC = () => {
         }
       }
       
+      // Update bullets
+      for (let b = 0; b < newBullets.length; b++) {
+        if (!newBullets[b].active) continue;
+        
+        // Update bullet position
+        for (let step = 0; step < BULLET_SPEED; step++) {
+          // Only process active bullets
+          if (!newBullets[b].active) break;
+          
+          const newPosition = updateBulletPosition(newBullets[b]);
+          
+          // Check if bullet is out of bounds
+          if (isOutOfBounds(newPosition, gridSize)) {
+            newBullets[b].active = false;
+            break;
+          }
+          
+          // Check if bullet hit a player's trail
+          let hitPlayerIndex = -1;
+          let hitTrailIndex = -1;
+          
+          for (let p = 0; p < newPlayers.length; p++) {
+            // Skip if the bullet belongs to this player (can't hit own trail)
+            if (newPlayers[p].id === newBullets[b].playerId) continue;
+            
+            const trailHitIndex = checkBulletTrailCollision(newPosition, newPlayers[p].trail);
+            if (trailHitIndex !== -1) {
+              hitPlayerIndex = p;
+              hitTrailIndex = trailHitIndex;
+              break;
+            }
+          }
+          
+          // If bullet hit a trail
+          if (hitPlayerIndex !== -1 && hitTrailIndex !== -1) {
+            // Cut the trail from the hit point
+            newPlayers[hitPlayerIndex].trail = removeTrailSegment(
+              newPlayers[hitPlayerIndex].trail, 
+              hitTrailIndex
+            );
+            
+            // Deactivate the bullet
+            newBullets[b].active = false;
+            
+            // Show hit message
+            toast.info(`Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`);
+            break;
+          }
+          
+          // Update bullet position if still active
+          if (newBullets[b].active) {
+            newBullets[b].position = newPosition;
+          }
+        }
+      }
+      
+      // Filter out inactive bullets and collected tokens
+      const activeBullets = newBullets.filter(b => b.active);
+      const availableTokens = newTokens.filter(t => !t.collected);
+      
       // Check game over conditions
       const alivePlayers = newPlayers.filter(p => p.isAlive);
       let isGameOver = false;
@@ -194,6 +344,8 @@ const Game: React.FC = () => {
       return {
         ...prevState,
         players: newPlayers,
+        tokens: availableTokens.length > 0 ? availableTokens : prevState.tokens,
+        bullets: activeBullets,
         isGameOver,
         winner
       };
@@ -208,7 +360,7 @@ const Game: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const { players, gridSize, cellSize } = gameState;
+    const { players, gridSize, cellSize, tokens, bullets } = gameState;
     
     // Clear canvas
     ctx.fillStyle = '#0B1622';
@@ -233,6 +385,27 @@ const Game: React.FC = () => {
       ctx.lineTo(gridSize.width * cellSize, y * cellSize);
       ctx.stroke();
     }
+    
+    // Draw tokens
+    tokens.forEach(token => {
+      if (token.collected) return;
+      
+      // Draw token
+      ctx.fillStyle = '#FFFF00';
+      ctx.shadowColor = '#FFFF00';
+      ctx.shadowBlur = 10;
+      
+      // Draw circular token
+      ctx.beginPath();
+      ctx.arc(
+        token.position.x * cellSize + cellSize / 2,
+        token.position.y * cellSize + cellSize / 2,
+        cellSize / 2 - 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    });
     
     // Draw player trails
     players.forEach(player => {
@@ -277,6 +450,33 @@ const Game: React.FC = () => {
           cellSize
         );
       }
+    });
+    
+    // Draw bullets
+    bullets.forEach(bullet => {
+      if (!bullet.active) return;
+      
+      // Set bullet color based on player
+      if (bullet.playerId === 1) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#0CD0FF';
+      } else {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#FF9900';
+      }
+      
+      ctx.shadowBlur = 15;
+      
+      // Draw circular bullet
+      ctx.beginPath();
+      ctx.arc(
+        bullet.position.x * cellSize + cellSize / 2,
+        bullet.position.y * cellSize + cellSize / 2,
+        cellSize / 3,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
     });
     
     // Reset shadow
@@ -330,23 +530,33 @@ const Game: React.FC = () => {
         </h1>
       </div>
       
-      {/* Player scores */}
+      {/* Player scores and bullet counts */}
       <div className="flex justify-center items-center gap-12 mb-4">
-        <PlayerScore 
-          playerName="Player 1" 
-          score={gameState.players[0].score} 
-          color="blue" 
-        />
+        <div className="flex flex-col items-center">
+          <PlayerScore 
+            playerName="Player 1" 
+            score={gameState.players[0].score} 
+            color="blue" 
+          />
+          <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+            Bullets: {gameState.players[0].bullets}
+          </div>
+        </div>
         
         <div className="text-center">
           <div className="text-xs text-tron-text/60 font-medium mb-1">VS</div>
         </div>
         
-        <PlayerScore 
-          playerName="Player 2" 
-          score={gameState.players[1].score} 
-          color="orange" 
-        />
+        <div className="flex flex-col items-center">
+          <PlayerScore 
+            playerName="Player 2" 
+            score={gameState.players[1].score} 
+            color="orange" 
+          />
+          <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
+            Bullets: {gameState.players[1].bullets}
+          </div>
+        </div>
       </div>
       
       {/* Game status overlay */}
@@ -421,6 +631,7 @@ const Game: React.FC = () => {
               <li>S - Move Down</li>
               <li>A - Move Left</li>
               <li>D - Move Right</li>
+              <li>1 - Shoot Bullet</li>
             </ul>
           </div>
           <div>
@@ -430,11 +641,14 @@ const Game: React.FC = () => {
               <li>↓ - Move Down</li>
               <li>← - Move Left</li>
               <li>→ - Move Right</li>
+              <li>/ - Shoot Bullet</li>
             </ul>
           </div>
         </div>
         <div className="mt-2 pt-2 border-t border-tron-text/10">
-          <p>Space - Pause/Resume</p>
+          <p className="mb-1">Space - Pause/Resume</p>
+          <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
+          <p>Use bullets to cut your opponent's trail.</p>
         </div>
       </div>
     </div>
