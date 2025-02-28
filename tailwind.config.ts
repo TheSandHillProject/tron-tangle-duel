@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				tron: {
+					blue: '#0CD0FF',
+					orange: '#FF9900',
+					background: '#0B1622',
+					grid: '#1a2a3a',
+					glow: '#00A8FF',
+					text: '#E0F2FF'
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,52 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: '1',
+						filter: 'brightness(1)'
+					},
+					'50%': { 
+						opacity: '0.8',
+						filter: 'brightness(1.2)'
+					}
+				},
+				'game-fade-in': {
+					'0%': { 
+						opacity: '0',
+						transform: 'scale(0.95)'
+					},
+					'100%': { 
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				},
+				'collision': {
+					'0%': { 
+						transform: 'scale(1)',
+						opacity: '1'
+					},
+					'50%': { 
+						transform: 'scale(1.5)',
+						opacity: '0.7'
+					},
+					'100%': { 
+						transform: 'scale(2)',
+						opacity: '0'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'game-fade-in': 'game-fade-in 0.3s ease-out',
+				'collision': 'collision 0.5s ease-out forwards'
+			},
+			boxShadow: {
+				'neon-blue': '0 0 5px theme("colors.tron.blue"), 0 0 10px theme("colors.tron.blue")',
+				'neon-orange': '0 0 5px theme("colors.tron.orange"), 0 0 10px theme("colors.tron.orange")'
 			}
 		}
 	},
