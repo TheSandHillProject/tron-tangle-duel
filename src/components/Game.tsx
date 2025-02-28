@@ -280,8 +280,8 @@ const Game: React.FC = () => {
           let hitTrailIndex = -1;
           
           for (let p = 0; p < newPlayers.length; p++) {
-            // Skip if the bullet belongs to this player (can't hit own trail)
-            if (newPlayers[p].id === newBullets[b].playerId) continue;
+            // Allow players to hit their own trail now (removing this skip check)
+            // if (newPlayers[p].id === newBullets[b].playerId) continue;
             
             const trailHitIndex = checkBulletTrailCollision(newPosition, newPlayers[p].trail);
             if (trailHitIndex !== -1) {
@@ -303,7 +303,12 @@ const Game: React.FC = () => {
             newBullets[b].active = false;
             
             // Show hit message
-            toast.info(`Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`);
+            const hitOwnTrail = newPlayers[hitPlayerIndex].id === newBullets[b].playerId;
+            toast.info(
+              hitOwnTrail 
+                ? `Player ${newBullets[b].playerId} shortened their own trail!`
+                : `Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`
+            );
             break;
           }
           
@@ -525,8 +530,8 @@ const Game: React.FC = () => {
         <div className="text-xs font-medium text-tron-text/60 tracking-widest uppercase mb-1">
           Round {gameState.round}
         </div>
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow">
-          TRON LIGHT CYCLES
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
+          BATTLE TRON
         </h1>
       </div>
       
@@ -648,7 +653,7 @@ const Game: React.FC = () => {
         <div className="mt-2 pt-2 border-t border-tron-text/10">
           <p className="mb-1">Space - Pause/Resume</p>
           <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
-          <p>Use bullets to cut your opponent's trail.</p>
+          <p>Use bullets to cut your opponent's trail or your own trail.</p>
         </div>
       </div>
     </div>
