@@ -11,7 +11,7 @@ const Index = () => {
       
       <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
         <p className="text-center">
-          &copy; {new Date().getFullYear()} Tron Light Cycles Game
+          &copy; 2025 Nic Pavao. All Rights Reserved.
         </p>
       </footer>
     </div>
