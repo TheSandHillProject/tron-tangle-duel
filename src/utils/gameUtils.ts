@@ -1,3 +1,4 @@
+
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -191,10 +192,11 @@ export const arePositionsEqual = (pos1: Position, pos2: Position): boolean => {
   return pos1.x === pos2.x && pos1.y === pos2.y;
 };
 
-// Remove trail segment from hit point to end
+// Remove trail segment from hit point to tail (MODIFIED)
 export const removeTrailSegment = (trail: Position[], hitIndex: number): Position[] => {
-  // Return the part of the trail before the hit point
-  return trail.slice(0, hitIndex);
+  // Return the part of the trail from the hit point forward (towards the head)
+  // This effectively removes everything from the hit point backward (towards the tail)
+  return trail.slice(hitIndex + 1);
 };
 
 // Reset the game for a new round
