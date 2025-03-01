@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -9,6 +10,7 @@ import {
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
   checkBulletTrailCollision, removeTrailSegment
 } from '@/utils/gameUtils';
+import { Button } from '@/components/ui/button';
 
 const GAME_SPEED = 100; // milliseconds between game updates
 const GRID_WIDTH = 40;
@@ -25,6 +27,9 @@ const Game: React.FC = () => {
     initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single')
   );
   
+  // Add a state to track if game has been started
+  const [gameStarted, setGameStarted] = useState(false);
+  
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -39,10 +44,20 @@ const Game: React.FC = () => {
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
+    // Reset gameStarted state when changing mode
+    setGameStarted(false);
+    // Clear any existing game loop
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
   };
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Only process keyboard input if the game has started
+    if (!gameStarted) return;
+    
     const { players } = gameState;
     const [player1, player2] = players;
     
@@ -101,7 +116,7 @@ const Game: React.FC = () => {
       ...prevState,
       players: newPlayers
     }));
-  }, [gameState, gameMode]);
+  }, [gameState, gameMode, gameStarted]);
   
   // Handle player shooting
   const handlePlayerShoot = (playerId: number) => {
@@ -138,13 +153,30 @@ const Game: React.FC = () => {
     });
   };
   
+  // Start the game
+  const startGame = () => {
+    // Reset the game state to ensure a clean start
+    setGameState(resetRound(gameState, gameMode === 'single'));
+    
+    // Set game as started
+    setGameStarted(true);
+    
+    // Start the game loop
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+    }
+    
+    gameLoopRef.current = setInterval(() => {
+      if (!gameState.isGamePaused && !gameState.isGameOver) {
+        updateGame();
+      }
+    }, GAME_SPEED);
+  };
+  
   // Initialize game
   useEffect(() => {
     // Add keyboard event listener
     window.addEventListener('keydown', handleKeyDown);
-    
-    // Start game loop
-    startGameLoop();
     
     // Cleanup function
     return () => {
@@ -160,27 +192,16 @@ const Game: React.FC = () => {
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
     }
-    startGameLoop();
+    // Reset gameStarted when game mode changes
+    setGameStarted(false);
   }, [gameMode]);
   
   // Draw game on canvas
   useEffect(() => {
     drawGame();
   }, [gameState]);
-  
-  // Start game loop
-  const startGameLoop = () => {
-    if (gameLoopRef.current) {
-      clearInterval(gameLoopRef.current);
-    }
-    
-    gameLoopRef.current = setInterval(() => {
-      if (!gameState.isGamePaused && !gameState.isGameOver) {
-        updateGame();
-      }
-    }, GAME_SPEED);
-  };
   
   // Update game state
   const updateGame = () => {
@@ -493,6 +514,13 @@ const Game: React.FC = () => {
   const handleStartNewGame = () => {
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
+    // Reset gameStarted status
+    setGameStarted(false);
+    // Clear any existing game loop
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
   };
   
   const handleResetRound = () => {
@@ -504,6 +532,13 @@ const Game: React.FC = () => {
         round: prevState.round + 1
       };
     });
+    // Reset gameStarted status
+    setGameStarted(false);
+    // Clear any existing game loop
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
   };
   
   const handlePauseGame = () => {
@@ -570,7 +605,7 @@ const Game: React.FC = () => {
       
       {/* Game status overlay */}
       <div className="relative">
-        {(gameState.isGameOver || gameState.isGamePaused) && (
+        {(gameState.isGameOver || gameState.isGamePaused || !gameStarted) && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-tron-background/70 backdrop-blur-sm animate-game-fade-in">
             <div className="text-center">
               {gameState.isGameOver && (
@@ -606,6 +641,18 @@ const Game: React.FC = () => {
                   >
                     Resume
                   </button>
+                </>
+              )}
+              
+              {!gameStarted && !gameState.isGameOver && !gameState.isGamePaused && (
+                <>
+                  <h2 className="text-2xl font-bold mb-4 text-tron-text">Ready to Play?</h2>
+                  <Button 
+                    onClick={startGame}
+                    className="btn-glow px-6 py-2 bg-tron-green/20 text-tron-green border border-tron-green/50 hover:bg-tron-green/30 rounded-lg"
+                  >
+                    Start Game
+                  </Button>
                 </>
               )}
             </div>
