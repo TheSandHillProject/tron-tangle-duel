@@ -633,10 +633,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
           {gameMode === 'single' ? (
             <>
               <PlayerScore 
-                playerName="Player" 
+                playerName="Player 1" 
                 score={bulletsCollected} 
                 color="blue"
-                label="Bullets Collected" 
+                label="Score" 
               />
               <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
                 High Score: {highScore}
