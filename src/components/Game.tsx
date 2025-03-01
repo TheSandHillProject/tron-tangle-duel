@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -65,8 +66,25 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     // Clone the current game state to avoid direct mutation
     const newPlayers = [...players];
     
-    // Player 1 controls (WASD)
-    if (player1.isAlive) {
+    // Single player mode - use arrow keys for player 1
+    if (gameMode === 'single' && player1.isAlive) {
+      if (e.key === 'ArrowUp' && isValidDirectionChange(player1.direction, 'UP')) {
+        newPlayers[0] = { ...player1, nextDirection: 'UP' };
+      } else if (e.key === 'ArrowDown' && isValidDirectionChange(player1.direction, 'DOWN')) {
+        newPlayers[0] = { ...player1, nextDirection: 'DOWN' };
+      } else if (e.key === 'ArrowLeft' && isValidDirectionChange(player1.direction, 'LEFT')) {
+        newPlayers[0] = { ...player1, nextDirection: 'LEFT' };
+      } else if (e.key === 'ArrowRight' && isValidDirectionChange(player1.direction, 'RIGHT')) {
+        newPlayers[0] = { ...player1, nextDirection: 'RIGHT' };
+      } 
+      // Player 1 shoot (1 key in both modes)
+      else if (e.key === '1' && player1.bullets > 0) {
+        handlePlayerShoot(1);
+        return;
+      }
+    }
+    // Two player mode - use WASD for player 1
+    else if (gameMode === 'two' && player1.isAlive) {
       if (e.key === 'w' && isValidDirectionChange(player1.direction, 'UP')) {
         newPlayers[0] = { ...player1, nextDirection: 'UP' };
       } else if (e.key === 's' && isValidDirectionChange(player1.direction, 'DOWN')) {
@@ -78,7 +96,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       } 
       // Player 1 shoot (1 key)
       else if (e.key === '1' && player1.bullets > 0) {
-        // Create bullet from player 1's position going in their direction
         handlePlayerShoot(1);
         return;
       }
@@ -97,7 +114,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       } 
       // Player 2 shoot (/ key)
       else if (e.key === '/' && player2.bullets > 0) {
-        // Create bullet from player 2's position going in their direction
         handlePlayerShoot(2);
         return;
       }
@@ -651,15 +667,15 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       
       {/* Game instructions */}
       <div className="mt-6 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-        <h3 className="font-medium mb-2 text-tron-text">How to Play</h3>
+        <h3 className="font-medium mb-2 text-tron-text text-center">How to Play</h3>
         {gameMode === 'single' ? (
-          <div>
+          <div className="text-center">
             <p className="text-tron-blue font-medium mb-1">Controls</p>
             <ul className="space-y-1">
-              <li>W - Move Up</li>
-              <li>S - Move Down</li>
-              <li>A - Move Left</li>
-              <li>D - Move Right</li>
+              <li>↑ - Move Up</li>
+              <li>↓ - Move Down</li>
+              <li>← - Move Left</li>
+              <li>→ - Move Right</li>
               <li>1 - Shoot Bullet</li>
               <li>Space - Pause/Resume</li>
             </ul>
@@ -670,7 +686,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-tron-blue font-medium mb-1">Player 1</p>
               <ul className="space-y-1">

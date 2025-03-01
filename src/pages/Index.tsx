@@ -30,17 +30,18 @@ const Index = () => {
 
         {/* Game instructions */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          <h3 className="font-medium mb-2 text-tron-text">How to Play</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <h3 className="font-medium mb-2 text-tron-text text-center">How to Play</h3>
+          <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-tron-blue font-medium mb-1">Player 1</p>
               <ul className="space-y-1">
-                <li>W - Move Up</li>
-                <li>S - Move Down</li>
-                <li>A - Move Left</li>
-                <li>D - Move Right</li>
+                <li>↑ - Move Up*</li>
+                <li>↓ - Move Down*</li>
+                <li>← - Move Left*</li>
+                <li>→ - Move Right*</li>
                 <li>1 - Shoot Bullet</li>
               </ul>
+              <p className="text-xs mt-1">*In 2-player mode, use WASD</p>
             </div>
             <div>
               <p className="text-tron-orange font-medium mb-1">Player 2</p>
