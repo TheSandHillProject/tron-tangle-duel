@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -30,9 +29,6 @@ const Game: React.FC = () => {
   // Game ready state (to prevent auto-start)
   const [gameReady, setGameReady] = useState<boolean>(false);
   
-  // Countdown state
-  const [countdown, setCountdown] = useState<number | null>(null);
-  
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -48,7 +44,6 @@ const Game: React.FC = () => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
     setGameReady(false);
-    setCountdown(null);
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
       gameLoopRef.current = null;
@@ -58,7 +53,7 @@ const Game: React.FC = () => {
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // Only handle key events if game is ready
-    if (!gameReady && countdown === null) return;
+    if (!gameReady) return;
     
     const { players } = gameState;
     const [player1, player2] = players;
@@ -118,7 +113,7 @@ const Game: React.FC = () => {
       ...prevState,
       players: newPlayers
     }));
-  }, [gameState, gameMode, gameReady, countdown]);
+  }, [gameState, gameMode, gameReady]);
   
   // Handle player shooting
   const handlePlayerShoot = (playerId: number) => {
@@ -173,37 +168,21 @@ const Game: React.FC = () => {
   useEffect(() => {
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
     setGameReady(false);
-    setCountdown(null);
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
       gameLoopRef.current = null;
     }
   }, [gameMode]);
   
-  // Effect for countdown
-  useEffect(() => {
-    if (countdown !== null) {
-      if (countdown > 0) {
-        const timer = setTimeout(() => {
-          setCountdown(prev => prev !== null ? prev - 1 : null);
-        }, 1000);
-        return () => clearTimeout(timer);
-      } else {
-        // Countdown finished, start the game
-        setGameReady(true);
-        startGameLoop();
-      }
-    }
-  }, [countdown]);
-  
   // Draw game on canvas
   useEffect(() => {
     drawGame();
-  }, [gameState, countdown]);
+  }, [gameState]);
   
-  // Start countdown
-  const startCountdown = () => {
-    setCountdown(3);
+  // Start game
+  const startGame = () => {
+    setGameReady(true);
+    startGameLoop();
   };
   
   // Start game loop
@@ -522,41 +501,6 @@ const Game: React.FC = () => {
       ctx.fill();
     });
     
-    // Draw countdown if active
-    if (countdown !== null) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.font = 'bold 64px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      if (countdown > 0) {
-        // Determine color based on game mode
-        if (gameMode === 'single' || countdown === 3) {
-          // Blue theme (for Player 1 or single player)
-          ctx.fillStyle = '#0CD0FF';
-          ctx.shadowColor = '#0CD0FF';
-        } else if (countdown === 2) {
-          // Mix of blue and orange for middle count
-          ctx.fillStyle = '#7EB7FF';
-          ctx.shadowColor = '#7EB7FF';
-        } else {
-          // Orange theme (for Player 2 in countdown = 1)
-          ctx.fillStyle = '#FF9900';
-          ctx.shadowColor = '#FF9900';
-        }
-        ctx.shadowBlur = 20;
-        ctx.fillText(countdown.toString(), canvas.width / 2, canvas.height / 2);
-      } else {
-        // Draw "GO!" in bright green
-        ctx.fillStyle = '#00FF00';
-        ctx.shadowColor = '#00FF00';
-        ctx.shadowBlur = 20;
-        ctx.fillText('GO!', canvas.width / 2, canvas.height / 2);
-      }
-    }
-    
     // Reset shadow
     ctx.shadowBlur = 0;
   };
@@ -566,7 +510,6 @@ const Game: React.FC = () => {
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
     setGameReady(false);
-    setCountdown(null);
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
       gameLoopRef.current = null;
@@ -583,7 +526,6 @@ const Game: React.FC = () => {
       };
     });
     setGameReady(false);
-    setCountdown(null);
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
       gameLoopRef.current = null;
@@ -655,14 +597,14 @@ const Game: React.FC = () => {
       {/* Game status overlay */}
       <div className="relative">
         {/* Game not ready overlay */}
-        {!gameReady && countdown === null && !gameState.isGameOver && !gameState.isGamePaused && (
+        {!gameReady && !gameState.isGameOver && !gameState.isGamePaused && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-tron-background/70 backdrop-blur-sm animate-game-fade-in">
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-4 text-tron-text">
                 Ready to Play?
               </h2>
               <Button 
-                onClick={startCountdown}
+                onClick={startGame}
                 className="btn-glow px-6 py-2 bg-tron-blue/20 text-tron-blue border border-tron-blue/50 hover:bg-tron-blue/30 rounded-lg"
               >
                 Start Game
