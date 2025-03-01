@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { toast } from 'sonner';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import GameModeSelector from './GameModeSelector';
@@ -40,7 +39,6 @@ const Game: React.FC = () => {
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
-    toast.success(`${mode === 'single' ? 'Single' : 'Two'}-player mode selected!`);
   };
   
   // Handle keyboard input
@@ -148,17 +146,6 @@ const Game: React.FC = () => {
     // Start game loop
     startGameLoop();
     
-    // Display initial toast based on game mode
-    if (gameMode === 'single') {
-      toast.info("WASD to move, 1 to shoot | Space to pause", {
-        duration: 5000,
-      });
-    } else {
-      toast.info("Player 1: WASD to move, 1 to shoot | Player 2: Arrow keys to move, / to shoot", {
-        duration: 5000,
-      });
-    }
-    
     // Cleanup function
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -217,9 +204,6 @@ const Game: React.FC = () => {
             
             // Increment player's bullet count
             newPlayers[i].bullets += 1;
-            
-            // Only show toast for token collection
-            toast.success(`Player ${i + 1} collected a token! Bullets: ${newPlayers[i].bullets}`);
             
             // Generate a new token
             const allPositions = [
@@ -325,12 +309,6 @@ const Game: React.FC = () => {
             
             // Deactivate the bullet
             newBullets[b].active = false;
-            
-            // Only show important hit messages to reduce toast flashes
-            const hitOwnTrail = newPlayers[hitPlayerIndex].id === newBullets[b].playerId;
-            if (!hitOwnTrail) {
-              toast.info(`Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`);
-            }
             break;
           }
           
@@ -354,7 +332,6 @@ const Game: React.FC = () => {
         // Draw - no players alive (only possible in two-player mode)
         isGameOver = true;
         winner = null;
-        toast.info("It's a draw!");
       } else if (gameMode === 'two' && alivePlayers.length === 1) {
         // One player wins (in two-player mode)
         isGameOver = true;
@@ -364,12 +341,10 @@ const Game: React.FC = () => {
         const winnerIndex = newPlayers.findIndex(p => p.id === winner);
         if (winnerIndex !== -1) {
           newPlayers[winnerIndex].score += 1;
-          toast.success(`Player ${winner} wins this round!`);
         }
       } else if (gameMode === 'single' && alivePlayers.length === 0) {
         // Game over in single-player mode
         isGameOver = true;
-        toast.info("Game Over! You crashed.");
       }
       
       return {
@@ -518,7 +493,6 @@ const Game: React.FC = () => {
   const handleStartNewGame = () => {
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
-    toast.success("New game started!");
   };
   
   const handleResetRound = () => {
@@ -530,7 +504,6 @@ const Game: React.FC = () => {
         round: prevState.round + 1
       };
     });
-    toast.info("Round reset!");
   };
   
   const handlePauseGame = () => {
@@ -538,7 +511,6 @@ const Game: React.FC = () => {
       ...prevState,
       isGamePaused: true
     }));
-    toast.info("Game paused");
   };
   
   const handleResumeGame = () => {
@@ -546,7 +518,6 @@ const Game: React.FC = () => {
       ...prevState,
       isGamePaused: false
     }));
-    toast.info("Game resumed");
   };
   
   return (
