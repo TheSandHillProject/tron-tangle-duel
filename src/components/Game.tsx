@@ -31,11 +31,14 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single')
   );
   
-  // High score for single player mode (max bullets collected)
+  // High score for single player mode (max tokens collected)
   const [highScore, setHighScore] = useState<number>(0);
   
-  // Bullets collected in current round for single player
-  const [bulletsCollected, setBulletsCollected] = useState<number>(0);
+  // Tokens collected in current round for single player
+  const [tokensCollected, setTokensCollected] = useState<number>(0);
+  
+  // Next token cost for a bullet in single player mode
+  const [nextBulletCost, setNextBulletCost] = useState<number>(1);
   
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
@@ -52,9 +55,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
     
-    // Reset bullets collected for single player
+    // Reset tokens collected and next bullet cost for single player
     if (mode === 'single') {
-      setBulletsCollected(0);
+      setTokensCollected(0);
+      setNextBulletCost(1);
     }
     
     // Call the parent component's handler if provided
@@ -68,9 +72,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     setGameMode(initialGameMode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, initialGameMode === 'single'));
     
-    // Reset bullets collected for single player
+    // Reset tokens collected and next bullet cost for single player
     if (initialGameMode === 'single') {
-      setBulletsCollected(0);
+      setTokensCollected(0);
+      setNextBulletCost(1);
     }
   }, [initialGameMode]);
   
@@ -219,9 +224,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     }
     startGameLoop();
     
-    // Reset bullets collected for single player
+    // Reset tokens collected and next bullet cost for single player
     if (gameMode === 'single') {
-      setBulletsCollected(0);
+      setTokensCollected(0);
+      setNextBulletCost(1);
     }
   }, [gameMode]);
   
@@ -264,12 +270,23 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             // Collect token (mark as collected)
             newTokens[j].collected = true;
             
-            // Increment player's bullet count
-            newPlayers[i].bullets += 1;
-            
-            // For single player mode, track bullets collected
+            // Handle token collection differently for single player and two player modes
             if (gameMode === 'single' && i === 0) {
               tokensCollectedThisUpdate += 1;
+              
+              // Check if we've collected enough tokens for a new bullet (in single player mode)
+              if (tokensCollectedThisUpdate >= nextBulletCost) {
+                newPlayers[i].bullets += 1;
+                
+                // Update next bullet cost for the next bullet
+                setNextBulletCost(prevCost => prevCost + 1);
+                
+                // Reset tokens collected for next bullet
+                tokensCollectedThisUpdate = 0;
+              }
+            } else {
+              // Two player mode: each token gives 1 bullet directly
+              newPlayers[i].bullets += 1;
             }
             
             // Generate a new token
@@ -290,9 +307,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         }
       }
       
-      // Update bullets collected counter for single player mode
+      // Update tokens collected counter for single player mode
       if (gameMode === 'single' && tokensCollectedThisUpdate > 0) {
-        setBulletsCollected(prev => {
+        setTokensCollected(prev => {
           const newTotal = prev + tokensCollectedThisUpdate;
           
           // Update high score if needed
@@ -576,9 +593,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
     
-    // Reset bullets collected for single player
+    // Reset tokens collected and next bullet cost for single player
     if (gameMode === 'single') {
-      setBulletsCollected(0);
+      setTokensCollected(0);
+      setNextBulletCost(1);
     }
   };
   
@@ -592,9 +610,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       };
     });
     
-    // Reset bullets collected for single player
+    // Reset tokens collected and next bullet cost for single player
     if (gameMode === 'single') {
-      setBulletsCollected(0);
+      setTokensCollected(0);
+      setNextBulletCost(1);
     }
   };
   
@@ -634,12 +653,19 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             <>
               <PlayerScore 
                 playerName="Player" 
-                score={bulletsCollected} 
+                score={tokensCollected} 
                 color="blue"
-                label="Bullets Collected" 
+                label="Tokens Collected" 
+                secondaryInfo={{
+                  label: "Bullets",
+                  value: gameState.players[0].bullets
+                }}
               />
               <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
                 High Score: {highScore}
+              </div>
+              <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
+                Next Bullet Cost: {nextBulletCost} tokens
               </div>
             </>
           ) : (
@@ -647,11 +673,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               playerName="Player 1" 
               score={gameState.players[0].score} 
               color="blue" 
+              secondaryInfo={{
+                label: "Bullets",
+                value: gameState.players[0].bullets
+              }}
             />
           )}
-          <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-            Bullets: {gameState.players[0].bullets}
-          </div>
         </div>
         
         {gameMode === 'two' && (
@@ -665,10 +692,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
                 playerName="Player 2" 
                 score={gameState.players[1].score} 
                 color="orange" 
+                secondaryInfo={{
+                  label: "Bullets",
+                  value: gameState.players[1].bullets
+                }}
               />
-              <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
-                Bullets: {gameState.players[1].bullets}
-              </div>
             </div>
           </>
         )}
@@ -685,10 +713,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
                     {gameMode === 'single' ? (
                       <span className="text-tron-text">
                         Game Over!
-                        {bulletsCollected > 0 && (
+                        {tokensCollected > 0 && (
                           <div className="text-lg mt-2">
-                            You collected <span className="text-tron-blue">{bulletsCollected}</span> bullets
-                            {bulletsCollected >= highScore && highScore > 0 && (
+                            You collected <span className="text-tron-blue">{tokensCollected}</span> tokens
+                            {tokensCollected >= highScore && highScore > 0 && (
                               <div className="text-tron-blue animate-pulse mt-1">New High Score!</div>
                             )}
                           </div>
@@ -762,9 +790,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               <li>Space - Pause/Resume</li>
             </ul>
             <div className="mt-2 pt-2 border-t border-tron-text/10">
-              <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
+              <p className="text-yellow-300 font-medium">Collect yellow tokens!</p>
+              <p>First bullet costs 1 token, second costs 2 tokens, and so on.</p>
               <p>Use bullets to cut your trail and create shortcuts.</p>
-              <p>Try to collect as many bullets as possible!</p>
+              <p>Try to collect as many tokens as possible!</p>
             </div>
           </div>
         ) : (
