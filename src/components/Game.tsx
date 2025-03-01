@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -531,13 +532,24 @@ const Game: React.FC = () => {
       ctx.textBaseline = 'middle';
       
       if (countdown > 0) {
-        // Draw countdown number
-        ctx.fillStyle = countdown === 3 ? '#FF0000' : countdown === 2 ? '#FFFF00' : '#00FF00';
-        ctx.shadowColor = countdown === 3 ? '#FF0000' : countdown === 2 ? '#FFFF00' : '#00FF00';
+        // Determine color based on game mode
+        if (gameMode === 'single' || countdown === 3) {
+          // Blue theme (for Player 1 or single player)
+          ctx.fillStyle = '#0CD0FF';
+          ctx.shadowColor = '#0CD0FF';
+        } else if (countdown === 2) {
+          // Mix of blue and orange for middle count
+          ctx.fillStyle = '#7EB7FF';
+          ctx.shadowColor = '#7EB7FF';
+        } else {
+          // Orange theme (for Player 2 in countdown = 1)
+          ctx.fillStyle = '#FF9900';
+          ctx.shadowColor = '#FF9900';
+        }
         ctx.shadowBlur = 20;
         ctx.fillText(countdown.toString(), canvas.width / 2, canvas.height / 2);
       } else {
-        // Draw "GO!"
+        // Draw "GO!" in bright green
         ctx.fillStyle = '#00FF00';
         ctx.shadowColor = '#00FF00';
         ctx.shadowBlur = 20;
