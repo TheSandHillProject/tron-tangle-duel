@@ -1,3 +1,4 @@
+
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -24,8 +25,6 @@ export type Player = {
   trail: Position[];
   isAlive: boolean;
   bullets: number;
-  longestSurvivalTime: number;
-  currentRoundStartTime: number | null;
 };
 
 export type GameState = {
@@ -38,8 +37,6 @@ export type GameState = {
   isGamePaused: boolean;
   winner: number | null;
   round: number;
-  isGameStarted: boolean;
-  currentTime: number;
 };
 
 // Initialize players
@@ -58,8 +55,6 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
-    longestSurvivalTime: 0,
-    currentRoundStartTime: null,
   };
 
   // In single player mode, only return player 1
@@ -78,8 +73,6 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
-    longestSurvivalTime: 0,
-    currentRoundStartTime: null,
   };
 
   return [player1, player2];
@@ -141,8 +134,6 @@ export const initialGameState = (
     isGamePaused: false,
     winner: null,
     round: 1,
-    isGameStarted: false,
-    currentTime: 0,
   };
 };
 
@@ -221,10 +212,9 @@ export const removeTrailSegment = (trail: Position[], hitIndex: number): Positio
 export const resetRound = (gameState: GameState, singlePlayerMode: boolean = false): GameState => {
   const newPlayers = initializePlayers(gameState.gridSize, singlePlayerMode);
   
-  // Preserve scores from previous round and longest survival time
+  // Preserve scores from previous round
   for (let i = 0; i < Math.min(newPlayers.length, gameState.players.length); i++) {
     newPlayers[i].score = gameState.players[i].score;
-    newPlayers[i].longestSurvivalTime = gameState.players[i].longestSurvivalTime;
   }
   
   return {
@@ -234,8 +224,6 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
     bullets: [],
     isGameOver: false,
     winner: null,
-    isGameStarted: false,
-    currentTime: 0,
   };
 };
 
@@ -262,11 +250,4 @@ export const getOppositeDirection = (direction: Direction): Direction => {
 // Check if direction change is valid (can't go directly opposite)
 export const isValidDirectionChange = (currentDirection: Direction, newDirection: Direction): boolean => {
   return getOppositeDirection(currentDirection) !== newDirection;
-};
-
-// Format time in seconds to MM:SS format
-export const formatTime = (timeInSeconds: number): string => {
-  const minutes = Math.floor(timeInSeconds / 60);
-  const seconds = timeInSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
