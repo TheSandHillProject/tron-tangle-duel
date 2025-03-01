@@ -40,7 +40,10 @@ export type GameState = {
 };
 
 // Initialize players
-export const initializePlayers = (gridSize: { width: number; height: number }): Player[] => {
+export const initializePlayers = (
+  gridSize: { width: number; height: number },
+  singlePlayerMode: boolean = false
+): Player[] => {
   // Player 1 starts from the left side, moving right
   const player1: Player = {
     id: 1,
@@ -53,6 +56,11 @@ export const initializePlayers = (gridSize: { width: number; height: number }): 
     isAlive: true,
     bullets: 0,
   };
+
+  // In single player mode, only return player 1
+  if (singlePlayerMode) {
+    return [player1];
+  }
 
   // Player 2 starts from the right side, moving left
   const player2: Player = {
@@ -110,10 +118,11 @@ export const generateInitialTokens = (
 export const initialGameState = (
   gridWidth: number = 40,
   gridHeight: number = 30,
-  cellSize: number = 15
+  cellSize: number = 15,
+  singlePlayerMode: boolean = false
 ): GameState => {
   const gridSize = { width: gridWidth, height: gridHeight };
-  const players = initializePlayers(gridSize);
+  const players = initializePlayers(gridSize, singlePlayerMode);
   
   return {
     players,
@@ -200,12 +209,13 @@ export const removeTrailSegment = (trail: Position[], hitIndex: number): Positio
 };
 
 // Reset the game for a new round
-export const resetRound = (gameState: GameState): GameState => {
-  const newPlayers = initializePlayers(gameState.gridSize);
+export const resetRound = (gameState: GameState, singlePlayerMode: boolean = false): GameState => {
+  const newPlayers = initializePlayers(gameState.gridSize, singlePlayerMode);
   
   // Preserve scores from previous round
-  newPlayers[0].score = gameState.players[0].score;
-  newPlayers[1].score = gameState.players[1].score;
+  for (let i = 0; i < Math.min(newPlayers.length, gameState.players.length); i++) {
+    newPlayers[i].score = gameState.players[i].score;
+  }
   
   return {
     ...gameState,
@@ -218,8 +228,13 @@ export const resetRound = (gameState: GameState): GameState => {
 };
 
 // Reset the entire game
-export const resetGame = (gridWidth: number = 40, gridHeight: number = 30, cellSize: number = 15): GameState => {
-  return initialGameState(gridWidth, gridHeight, cellSize);
+export const resetGame = (
+  gridWidth: number = 40, 
+  gridHeight: number = 30, 
+  cellSize: number = 15,
+  singlePlayerMode: boolean = false
+): GameState => {
+  return initialGameState(gridWidth, gridHeight, cellSize, singlePlayerMode);
 };
 
 // Get opposite direction
