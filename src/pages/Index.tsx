@@ -29,7 +29,7 @@ const Index = () => {
         </div>
 
         {/* Game instructions */}
-        <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in text-center">
+        <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
           <h3 className="font-medium mb-2 text-tron-text">How to Play</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
