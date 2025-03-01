@@ -182,7 +182,18 @@ const Game: React.FC = () => {
   // Start game
   const startGame = () => {
     setGameReady(true);
-    startGameLoop();
+    
+    // Clear any existing game loop
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+    }
+    
+    // Immediately start the game loop
+    gameLoopRef.current = setInterval(() => {
+      if (!gameState.isGamePaused && !gameState.isGameOver) {
+        updateGame();
+      }
+    }, GAME_SPEED);
   };
   
   // Start game loop
