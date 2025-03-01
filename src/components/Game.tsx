@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import PlayerScore from './PlayerScore';
@@ -27,6 +26,10 @@ const Game: React.FC = () => {
     initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single')
   );
   
+  // Timer state for single player mode
+  const [timer, setTimer] = useState<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -41,6 +44,8 @@ const Game: React.FC = () => {
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
+    // Reset timer when game mode changes
+    setTimer(0);
     toast.success(`${mode === 'single' ? 'Single' : 'Two'}-player mode selected!`);
   };
   
@@ -140,9 +145,30 @@ const Game: React.FC = () => {
       };
     });
     
-    // Show toast
-    toast.info(`Player ${playerId} fired a shot!`);
+    // Don't show toast for every shot to reduce flashes
   };
+  
+  // Timer functionality
+  useEffect(() => {
+    // Only run timer in single player mode when game is active
+    if (gameMode === 'single' && !gameState.isGamePaused && !gameState.isGameOver) {
+      timerRef.current = setInterval(() => {
+        setTimer(prevTimer => prevTimer + 1);
+      }, 1000);
+    } else {
+      // Clear timer when paused, game over, or not in single player mode
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+    
+    // Cleanup timer on unmount or when dependencies change
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [gameMode, gameState.isGamePaused, gameState.isGameOver]);
   
   // Initialize game
   useEffect(() => {
@@ -169,6 +195,9 @@ const Game: React.FC = () => {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
       }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, [handleKeyDown, gameMode]);
   
@@ -178,6 +207,8 @@ const Game: React.FC = () => {
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
     }
+    // Reset timer when game mode changes
+    setTimer(0);
     startGameLoop();
   }, [gameMode]);
   
@@ -222,7 +253,7 @@ const Game: React.FC = () => {
             // Increment player's bullet count
             newPlayers[i].bullets += 1;
             
-            // Show toast
+            // Only show toast for token collection
             toast.success(`Player ${i + 1} collected a token! Bullets: ${newPlayers[i].bullets}`);
             
             // Generate a new token
@@ -330,13 +361,11 @@ const Game: React.FC = () => {
             // Deactivate the bullet
             newBullets[b].active = false;
             
-            // Show hit message
+            // Only show important hit messages to reduce toast flashes
             const hitOwnTrail = newPlayers[hitPlayerIndex].id === newBullets[b].playerId;
-            toast.info(
-              hitOwnTrail 
-                ? `Player ${newBullets[b].playerId} shortened their own trail!`
-                : `Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`
-            );
+            if (!hitOwnTrail) {
+              toast.info(`Player ${newBullets[b].playerId} hit Player ${newPlayers[hitPlayerIndex].id}'s trail!`);
+            }
             break;
           }
           
@@ -520,10 +549,19 @@ const Game: React.FC = () => {
     ctx.shadowBlur = 0;
   };
   
+  // Format timer display (mm:ss)
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+  
   // Game control handlers
   const handleStartNewGame = () => {
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
+    // Reset timer
+    setTimer(0);
     toast.success("New game started!");
   };
   
@@ -536,6 +574,10 @@ const Game: React.FC = () => {
         round: prevState.round + 1
       };
     });
+    // Reset timer in single player mode
+    if (gameMode === 'single') {
+      setTimer(0);
+    }
     toast.info("Round reset!");
   };
   
@@ -570,7 +612,7 @@ const Game: React.FC = () => {
       {/* Game mode selector */}
       <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
       
-      {/* Player scores and bullet counts */}
+      {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
         <div className="flex flex-col items-center">
           <PlayerScore 
@@ -581,6 +623,13 @@ const Game: React.FC = () => {
           <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
             Bullets: {gameState.players[0].bullets}
           </div>
+          
+          {/* Only show timer in single player mode */}
+          {gameMode === 'single' && (
+            <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue font-mono">
+              Time: {formatTime(timer)}
+            </div>
+          )}
         </div>
         
         {gameMode === 'two' && (
@@ -612,7 +661,9 @@ const Game: React.FC = () => {
                 <>
                   <h2 className="text-2xl font-bold mb-4">
                     {gameMode === 'single' ? (
-                      <span className="text-tron-text">Game Over!</span>
+                      <span className="text-tron-text">
+                        Game Over! Time: {formatTime(timer)}
+                      </span>
                     ) : gameState.winner ? (
                       <span className={gameState.winner === 1 ? 'text-tron-blue' : 'text-tron-orange'}>
                         Player {gameState.winner} Wins!
