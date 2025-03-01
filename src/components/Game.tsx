@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -7,7 +8,7 @@ import {
   initialGameState, updatePlayerPosition, isOutOfBounds, 
   checkCollision, arePositionsEqual, resetRound, resetGame,
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
-  checkBulletTrailCollision, removeTrailSegment
+  checkBulletTrailCollision, removeTrailSegment, formatTime
 } from '@/utils/gameUtils';
 
 const GAME_SPEED = 100; // milliseconds between game updates
@@ -28,6 +29,9 @@ const Game: React.FC = () => {
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Timer reference for survival time
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Canvas reference
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
@@ -39,10 +43,24 @@ const Game: React.FC = () => {
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
+    
+    // Clear the game loop and timer
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   };
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Ignore keyboard input if game hasn't started
+    if (!gameState.isGameStarted) return;
+    
     const { players } = gameState;
     const [player1, player2] = players;
     
@@ -143,14 +161,14 @@ const Game: React.FC = () => {
     // Add keyboard event listener
     window.addEventListener('keydown', handleKeyDown);
     
-    // Start game loop
-    startGameLoop();
-    
     // Cleanup function
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
   }, [handleKeyDown, gameMode]);
@@ -160,8 +178,12 @@ const Game: React.FC = () => {
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
+      gameLoopRef.current = null;
     }
-    startGameLoop();
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, [gameMode]);
   
   // Draw game on canvas
@@ -169,22 +191,70 @@ const Game: React.FC = () => {
     drawGame();
   }, [gameState]);
   
-  // Start game loop
-  const startGameLoop = () => {
+  // Update the timer
+  useEffect(() => {
+    // Only run timer when game is started, not paused and not over
+    if (gameState.isGameStarted && !gameState.isGamePaused && !gameState.isGameOver) {
+      if (!timerRef.current) {
+        // Set up the timer to update every second
+        timerRef.current = setInterval(() => {
+          setGameState(prevState => ({
+            ...prevState,
+            currentTime: prevState.currentTime + 1
+          }));
+        }, 1000);
+      }
+    } else {
+      // Clear the timer if game is paused or over
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [gameState.isGameStarted, gameState.isGamePaused, gameState.isGameOver]);
+  
+  // Start game
+  const startGame = () => {
+    // Clear previous game loop if exists
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
     }
     
+    // Set the game as started
+    setGameState(prevState => {
+      const newPlayers = [...prevState.players].map(player => ({
+        ...player,
+        currentRoundStartTime: Date.now()
+      }));
+      
+      return {
+        ...prevState,
+        isGameStarted: true,
+        players: newPlayers,
+        currentTime: 0
+      };
+    });
+    
+    // Start game loop
     gameLoopRef.current = setInterval(() => {
-      if (!gameState.isGamePaused && !gameState.isGameOver) {
-        updateGame();
-      }
+      updateGame();
     }, GAME_SPEED);
   };
   
   // Update game state
   const updateGame = () => {
     setGameState(prevState => {
+      if (prevState.isGamePaused || prevState.isGameOver || !prevState.isGameStarted) {
+        return prevState;
+      }
+      
       // Clone the current state
       const { players, gridSize, tokens, bullets } = prevState;
       const newPlayers = [...players].map(player => ({ ...player }));
@@ -345,6 +415,11 @@ const Game: React.FC = () => {
       } else if (gameMode === 'single' && alivePlayers.length === 0) {
         // Game over in single-player mode
         isGameOver = true;
+        
+        // Update longest survival time if current time is greater
+        if (prevState.currentTime > newPlayers[0].longestSurvivalTime) {
+          newPlayers[0].longestSurvivalTime = prevState.currentTime;
+        }
       }
       
       return {
@@ -538,15 +613,41 @@ const Game: React.FC = () => {
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
         <div className="flex flex-col items-center">
-          <PlayerScore 
-            playerName={gameMode === 'single' ? "Player" : "Player 1"} 
-            score={gameState.players[0].score} 
-            color="blue" 
-          />
+          {gameMode === 'single' ? (
+            <>
+              <div className="flex flex-col items-center animate-game-fade-in">
+                <div className="text-sm font-medium mb-1 px-3 py-1 rounded-full text-tron-blue bg-tron-blue/10">
+                  Player
+                </div>
+                <div className="text-4xl font-bold text-tron-blue animate-pulse-glow">
+                  {formatTime(gameState.players[0].longestSurvivalTime)}
+                </div>
+                <div className="text-xs text-tron-text/60 mt-1">Longest Survival</div>
+              </div>
+            </>
+          ) : (
+            <PlayerScore 
+              playerName="Player 1" 
+              score={gameState.players[0].score} 
+              color="blue" 
+            />
+          )}
           <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
             Bullets: {gameState.players[0].bullets}
           </div>
         </div>
+        
+        {/* Current timer for single player mode */}
+        {gameMode === 'single' && (
+          <div className="flex flex-col items-center">
+            <div className="text-sm font-medium mb-1 px-3 py-1 rounded-full text-tron-text bg-tron-text/10">
+              Current Time
+            </div>
+            <div className="text-3xl font-mono text-tron-text">
+              {formatTime(gameState.currentTime)}
+            </div>
+          </div>
+        )}
         
         {gameMode === 'two' && (
           <>
@@ -570,6 +671,18 @@ const Game: React.FC = () => {
       
       {/* Game status overlay */}
       <div className="relative">
+        {/* Start game button overlay (only shown when game is not started) */}
+        {!gameState.isGameStarted && !gameState.isGameOver && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-tron-background/70 backdrop-blur-sm animate-game-fade-in">
+            <button
+              onClick={startGame}
+              className="btn-glow px-8 py-3 bg-tron-blue/20 text-tron-blue border-2 border-tron-blue/50 hover:bg-tron-blue/30 rounded-lg text-xl font-bold transition-all hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+        
         {(gameState.isGameOver || gameState.isGamePaused) && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-tron-background/70 backdrop-blur-sm animate-game-fade-in">
             <div className="text-center">
@@ -588,6 +701,14 @@ const Game: React.FC = () => {
                       <span className="text-tron-text">It's a Draw!</span>
                     )}
                   </h2>
+                  {gameMode === 'single' && (
+                    <div className="mb-4">
+                      <p className="text-tron-text">Survival Time: {formatTime(gameState.currentTime)}</p>
+                      {gameState.currentTime >= gameState.players[0].longestSurvivalTime && (
+                        <p className="text-tron-blue mt-2">New Record!</p>
+                      )}
+                    </div>
+                  )}
                   <button 
                     onClick={handleResetRound}
                     className="btn-glow px-6 py-2 bg-tron-blue/20 text-tron-blue border border-tron-blue/50 hover:bg-tron-blue/30 rounded-lg"
