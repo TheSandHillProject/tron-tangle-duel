@@ -10,15 +10,19 @@ import {
   checkBulletTrailCollision, removeTrailSegment
 } from '@/utils/gameUtils';
 
+interface GameProps {
+  initialGameMode?: 'single' | 'two';
+}
+
 const GAME_SPEED = 100; // milliseconds between game updates
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 30;
 const CELL_SIZE = 15;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
-const Game: React.FC = () => {
+const Game: React.FC<GameProps> = ({ initialGameMode = 'two' }) => {
   // Game mode state (single or two player)
-  const [gameMode, setGameMode] = useState<'single' | 'two'>('two');
+  const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   
   // Game state
   const [gameState, setGameState] = useState<GameState>(() => 
@@ -40,6 +44,12 @@ const Game: React.FC = () => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
   };
+  
+  // Effect to reset game state when initialGameMode changes
+  useEffect(() => {
+    setGameMode(initialGameMode);
+    setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, initialGameMode === 'single'));
+  }, [initialGameMode]);
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -532,8 +542,10 @@ const Game: React.FC = () => {
         </h1>
       </div>
       
-      {/* Game mode selector */}
-      <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+      {/* Game mode selector - only show if initialGameMode not set */}
+      {!initialGameMode && (
+        <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+      )}
       
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
