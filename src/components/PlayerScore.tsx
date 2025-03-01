@@ -6,16 +6,9 @@ interface PlayerScoreProps {
   score: number;
   color: string;
   label?: string;
-  secondaryInfo?: { label: string; value: number };
 }
 
-const PlayerScore: React.FC<PlayerScoreProps> = ({ 
-  playerName, 
-  score, 
-  color, 
-  label = "Score",
-  secondaryInfo 
-}) => {
+const PlayerScore: React.FC<PlayerScoreProps> = ({ playerName, score, color, label = "Score" }) => {
   const isBlue = color === 'blue';
   
   return (
@@ -38,14 +31,6 @@ const PlayerScore: React.FC<PlayerScoreProps> = ({
         <div className={`text-xs mt-1 ${isBlue ? 'text-tron-blue/80' : 'text-tron-orange/80'}`}>
           {label}
         </div>
-        
-        {secondaryInfo && (
-          <div className={`mt-1 bg-${isBlue ? 'tron-blue' : 'tron-orange'}/10 px-2 py-1 rounded text-xs ${
-            isBlue ? 'text-tron-blue' : 'text-tron-orange'
-          }`}>
-            {secondaryInfo.label}: {secondaryInfo.value}
-          </div>
-        )}
       </div>
     </div>
   );
