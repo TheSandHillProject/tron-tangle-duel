@@ -31,6 +31,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single')
   );
   
+  // High score for single player mode (max bullets collected)
+  const [highScore, setHighScore] = useState<number>(0);
+  
+  // Bullets collected in current round for single player
+  const [bulletsCollected, setBulletsCollected] = useState<number>(0);
+  
   // Game loop timer reference
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -46,6 +52,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
     
+    // Reset bullets collected for single player
+    if (mode === 'single') {
+      setBulletsCollected(0);
+    }
+    
     // Call the parent component's handler if provided
     if (onGameModeChange) {
       onGameModeChange(mode);
@@ -56,7 +67,20 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   useEffect(() => {
     setGameMode(initialGameMode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, initialGameMode === 'single'));
+    
+    // Reset bullets collected for single player
+    if (initialGameMode === 'single') {
+      setBulletsCollected(0);
+    }
   }, [initialGameMode]);
+  
+  // Load high score from localStorage on component mount
+  useEffect(() => {
+    const savedHighScore = localStorage.getItem('tronHighScore');
+    if (savedHighScore) {
+      setHighScore(parseInt(savedHighScore, 10));
+    }
+  }, []);
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -194,6 +218,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       clearInterval(gameLoopRef.current);
     }
     startGameLoop();
+    
+    // Reset bullets collected for single player
+    if (gameMode === 'single') {
+      setBulletsCollected(0);
+    }
   }, [gameMode]);
   
   // Draw game on canvas
@@ -223,6 +252,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       const newTokens = [...tokens];
       const newBullets = [...bullets];
       const occupiedPositions: Position[] = [];
+      let tokensCollectedThisUpdate = 0;
       
       // Check for token collection
       for (let i = 0; i < newPlayers.length; i++) {
@@ -236,6 +266,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             
             // Increment player's bullet count
             newPlayers[i].bullets += 1;
+            
+            // For single player mode, track bullets collected
+            if (gameMode === 'single' && i === 0) {
+              tokensCollectedThisUpdate += 1;
+            }
             
             // Generate a new token
             const allPositions = [
@@ -253,6 +288,21 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             break;
           }
         }
+      }
+      
+      // Update bullets collected counter for single player mode
+      if (gameMode === 'single' && tokensCollectedThisUpdate > 0) {
+        setBulletsCollected(prev => {
+          const newTotal = prev + tokensCollectedThisUpdate;
+          
+          // Update high score if needed
+          if (newTotal > highScore) {
+            setHighScore(newTotal);
+            localStorage.setItem('tronHighScore', newTotal.toString());
+          }
+          
+          return newTotal;
+        });
       }
       
       // Update each player
@@ -525,6 +575,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   const handleStartNewGame = () => {
     // Reset entire game
     setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
+    
+    // Reset bullets collected for single player
+    if (gameMode === 'single') {
+      setBulletsCollected(0);
+    }
   };
   
   const handleResetRound = () => {
@@ -536,6 +591,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         round: prevState.round + 1
       };
     });
+    
+    // Reset bullets collected for single player
+    if (gameMode === 'single') {
+      setBulletsCollected(0);
+    }
   };
   
   const handlePauseGame = () => {
@@ -570,11 +630,25 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
         <div className="flex flex-col items-center">
-          <PlayerScore 
-            playerName={gameMode === 'single' ? "Player" : "Player 1"} 
-            score={gameState.players[0].score} 
-            color="blue" 
-          />
+          {gameMode === 'single' ? (
+            <>
+              <PlayerScore 
+                playerName="Player" 
+                score={bulletsCollected} 
+                color="blue"
+                label="Bullets Collected" 
+              />
+              <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
+                High Score: {highScore}
+              </div>
+            </>
+          ) : (
+            <PlayerScore 
+              playerName="Player 1" 
+              score={gameState.players[0].score} 
+              color="blue" 
+            />
+          )}
           <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
             Bullets: {gameState.players[0].bullets}
           </div>
@@ -611,6 +685,14 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
                     {gameMode === 'single' ? (
                       <span className="text-tron-text">
                         Game Over!
+                        {bulletsCollected > 0 && (
+                          <div className="text-lg mt-2">
+                            You collected <span className="text-tron-blue">{bulletsCollected}</span> bullets
+                            {bulletsCollected >= highScore && highScore > 0 && (
+                              <div className="text-tron-blue animate-pulse mt-1">New High Score!</div>
+                            )}
+                          </div>
+                        )}
                       </span>
                     ) : gameState.winner ? (
                       <span className={gameState.winner === 1 ? 'text-tron-blue' : 'text-tron-orange'}>
@@ -682,7 +764,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             <div className="mt-2 pt-2 border-t border-tron-text/10">
               <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
               <p>Use bullets to cut your trail and create shortcuts.</p>
-              <p>Try to survive as long as possible!</p>
+              <p>Try to collect as many bullets as possible!</p>
             </div>
           </div>
         ) : (
