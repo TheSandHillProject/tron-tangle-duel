@@ -27,6 +27,38 @@ const Index = () => {
             TWO PLAYERS
           </Link>
         </div>
+
+        {/* Game instructions */}
+        <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
+          <h3 className="font-medium mb-2 text-tron-text">How to Play</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-tron-blue font-medium mb-1">Player 1</p>
+              <ul className="space-y-1">
+                <li>W - Move Up</li>
+                <li>S - Move Down</li>
+                <li>A - Move Left</li>
+                <li>D - Move Right</li>
+                <li>1 - Shoot Bullet</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-tron-orange font-medium mb-1">Player 2</p>
+              <ul className="space-y-1">
+                <li>↑ - Move Up</li>
+                <li>↓ - Move Down</li>
+                <li>← - Move Left</li>
+                <li>→ - Move Right</li>
+                <li>/ - Shoot Bullet</li>
+              </ul>
+            </div>
+            <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10">
+              <p className="mb-1">Space - Pause/Resume</p>
+              <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
+              <p>Use bullets to cut your opponent's trail or your own trail.</p>
+            </div>
+          </div>
+        </div>
       </div>
       
       <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
