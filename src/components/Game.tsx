@@ -12,6 +12,7 @@ import {
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
+  onGameModeChange?: (mode: 'single' | 'two') => void;
 }
 
 const GAME_SPEED = 100; // milliseconds between game updates
@@ -20,7 +21,7 @@ const GRID_HEIGHT = 30;
 const CELL_SIZE = 15;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
-const Game: React.FC<GameProps> = ({ initialGameMode = 'two' }) => {
+const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
   // Game mode state (single or two player)
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   
@@ -43,6 +44,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two' }) => {
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
+    
+    // Call the parent component's handler if provided
+    if (onGameModeChange) {
+      onGameModeChange(mode);
+    }
   };
   
   // Effect to reset game state when initialGameMode changes
@@ -542,10 +548,8 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two' }) => {
         </h1>
       </div>
       
-      {/* Game mode selector - only show if initialGameMode not set */}
-      {!initialGameMode && (
-        <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
-      )}
+      {/* Game mode selector - always show it */}
+      <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
       
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
