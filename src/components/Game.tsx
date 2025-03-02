@@ -16,7 +16,7 @@ interface GameProps {
   onGameModeChange?: (mode: 'single' | 'two') => void;
 }
 
-const BASE_GAME_SPEED = 200; // base milliseconds between game updates
+const BASE_GAME_SPEED = 300; // base milliseconds between game updates
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 40;
 const CELL_SIZE = 12;
