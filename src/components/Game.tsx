@@ -18,8 +18,8 @@ interface GameProps {
 
 const GAME_SPEED = 100; // milliseconds between game updates
 const GRID_WIDTH = 40;
-const GRID_HEIGHT = 30;
-const CELL_SIZE = 15;
+const GRID_HEIGHT = 60;
+const CELL_SIZE = 10;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
