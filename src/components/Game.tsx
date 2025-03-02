@@ -16,9 +16,9 @@ interface GameProps {
   onGameModeChange?: (mode: 'single' | 'two') => void;
 }
 
-const BASE_GAME_SPEED = 160; // base milliseconds between game updates
+const BASE_GAME_SPEED = 100; // base milliseconds between game updates
 const GRID_WIDTH = 50;
-const GRID_HEIGHT = 40;
+const GRID_HEIGHT = 50;
 const CELL_SIZE = 12;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
