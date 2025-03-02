@@ -84,6 +84,13 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Prevent default browser scrolling when using arrow keys, space, or WASD
+    if (
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 's', 'a', 'd'].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+    
     const { players } = gameState;
     const [player1, player2] = players;
     
