@@ -625,6 +625,17 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     }));
   };
   
+  const handleSpeedChange = (newSpeed: number) => {
+    setSpeedMultiplier(newSpeed);
+    
+    // Restart game loop with new speed
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+    }
+    
+    startGameLoop();
+  };
+  
   return (
     <div className="flex flex-col items-center">
       {/* Game title and round */}
