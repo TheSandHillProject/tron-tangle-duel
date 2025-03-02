@@ -3,6 +3,7 @@ import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import GameModeSelector from './GameModeSelector';
 import SpeedControl from './SpeedControl';
+import GameSetup from './GameSetup';
 import { 
   Direction, GameState, Position, Player, Token, Bullet,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
@@ -17,9 +18,9 @@ interface GameProps {
 }
 
 const BASE_GAME_SPEED = 500; // base milliseconds between game updates
-const GRID_WIDTH = 50;
-const GRID_HEIGHT = 40;
-const CELL_SIZE = 12;
+const DEFAULT_GRID_WIDTH = 50;
+const DEFAULT_GRID_HEIGHT = 40;
+const DEFAULT_CELL_SIZE = 12;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
@@ -29,12 +30,20 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   // Speed multiplier (1x, 2x, 3x, 4x)
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   
-  // Calculate actual game speed based on multiplier
-  const GAME_SPEED =  BASE_GAME_SPEED / speedMultiplier;
+  // Grid configuration
+  const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
+  const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
+  const [framesPerSecond, setFramesPerSecond] = useState<number>(2); // Default is 2 FPS
+  
+  // Setup state - true when configuring game, false when playing
+  const [isSetup, setIsSetup] = useState<boolean>(true);
+  
+  // Calculate actual game speed based on FPS (milliseconds per frame)
+  const GAME_SPEED = Math.round(1000 / framesPerSecond);
   
   // Game state
   const [gameState, setGameState] = useState<GameState>(() => 
-    initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single')
+    initialGameState(gridWidth, gridHeight, DEFAULT_CELL_SIZE, gameMode === 'single')
   );
   
   // High score for single player mode (max bullets collected)
@@ -53,10 +62,28 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   const canvasWidth = gameState.gridSize.width * gameState.cellSize;
   const canvasHeight = gameState.gridSize.height * gameState.cellSize;
   
+  // Apply game configuration and start the game
+  const applyGameSetup = (width: number, height: number, fps: number) => {
+    setGridWidth(width);
+    setGridHeight(height);
+    setFramesPerSecond(fps);
+    
+    // Initialize game state with new grid size
+    setGameState(initialGameState(width, height, DEFAULT_CELL_SIZE, gameMode === 'single'));
+    
+    // Exit setup mode
+    setIsSetup(false);
+    
+    // Reset bullets collected for single player
+    if (gameMode === 'single') {
+      setBulletsCollected(0);
+    }
+  };
+  
   // Handle game mode change
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
-    setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, mode === 'single'));
+    setGameState(initialGameState(gridWidth, gridHeight, DEFAULT_CELL_SIZE, mode === 'single'));
     
     // Reset bullets collected for single player
     if (mode === 'single') {
@@ -72,7 +99,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   // Effect to reset game state when initialGameMode changes
   useEffect(() => {
     setGameMode(initialGameMode);
-    setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, initialGameMode === 'single'));
+    setGameState(initialGameState(gridWidth, gridHeight, DEFAULT_CELL_SIZE, initialGameMode === 'single'));
     
     // Reset bullets collected for single player
     if (initialGameMode === 'single') {
@@ -90,6 +117,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // If in setup mode, don't handle game controls
+    if (isSetup) return;
+    
     // Prevent default browser scrolling when using arrow keys, space, or WASD
     if (
       ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 's', 'a', 'd'].includes(e.key)
@@ -170,7 +200,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       ...prevState,
       players: newPlayers
     }));
-  }, [gameState, gameMode]);
+  }, [gameState, gameMode, isSetup]);
   
   // Handle player shooting
   const handlePlayerShoot = (playerId: number) => {
@@ -212,8 +242,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     // Add keyboard event listener
     window.addEventListener('keydown', handleKeyDown);
     
-    // Start game loop
-    startGameLoop();
+    // Start game loop if not in setup mode
+    if (!isSetup) {
+      startGameLoop();
+    }
     
     // Cleanup function
     return () => {
@@ -222,26 +254,31 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         clearInterval(gameLoopRef.current);
       }
     };
-  }, [handleKeyDown, gameMode]);
+  }, [handleKeyDown, gameMode, isSetup]);
   
   // Effect to reset game state when game mode changes
   useEffect(() => {
-    setGameState(initialGameState(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
+    setGameState(initialGameState(gridWidth, gridHeight, DEFAULT_CELL_SIZE, gameMode === 'single'));
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
     }
-    startGameLoop();
+    
+    if (!isSetup) {
+      startGameLoop();
+    }
     
     // Reset bullets collected for single player
     if (gameMode === 'single') {
       setBulletsCollected(0);
     }
-  }, [gameMode]);
+  }, [gameMode, gridWidth, gridHeight, isSetup]);
   
   // Draw game on canvas
   useEffect(() => {
-    drawGame();
-  }, [gameState]);
+    if (!isSetup) {
+      drawGame();
+    }
+  }, [gameState, isSetup]);
   
   // Start game loop
   const startGameLoop = () => {
@@ -586,8 +623,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   
   // Game control handlers
   const handleStartNewGame = () => {
-    // Reset entire game
-    setGameState(resetGame(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, gameMode === 'single'));
+    // Reset entire game and go back to setup
+    setIsSetup(true);
+    setGameState(resetGame(gridWidth, gridHeight, DEFAULT_CELL_SIZE, gameMode === 'single'));
     
     // Reset bullets collected for single player
     if (gameMode === 'single') {
@@ -636,6 +674,28 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     startGameLoop();
   };
   
+  // If in setup mode, show the setup screen
+  if (isSetup) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className="mb-2 text-center animate-game-fade-in">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
+            BATTLE TRON
+          </h1>
+        </div>
+        
+        <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+        
+        <GameSetup 
+          onSetupComplete={applyGameSetup}
+          initialGridWidth={gridWidth}
+          initialGridHeight={gridHeight}
+          initialFPS={framesPerSecond}
+        />
+      </div>
+    );
+  }
+  
   return (
     <div className="flex flex-col items-center">
       {/* Game title and round */}
@@ -651,8 +711,13 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       {/* Game mode selector - always show it */}
       <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
       
-      {/* Speed Control Slider */}
-      <SpeedControl speedMultiplier={speedMultiplier} onSpeedChange={handleSpeedChange} />
+      {/* Current grid and FPS info */}
+      <div className="glass-panel rounded-xl p-3 mb-4 animate-game-fade-in w-full max-w-md">
+        <div className="flex justify-between text-xs text-tron-text/80">
+          <div>Grid: {gridWidth} x {gridHeight}</div>
+          <div>Speed: {framesPerSecond} FPS</div>
+        </div>
+      </div>
       
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
