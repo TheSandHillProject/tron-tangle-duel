@@ -16,10 +16,10 @@ interface GameProps {
   onGameModeChange?: (mode: 'single' | 'two') => void;
 }
 
-const BASE_GAME_SPEED = 100; // base milliseconds between game updates
-const GRID_WIDTH = 40;
-const GRID_HEIGHT = 60;
-const CELL_SIZE = 10;
+const BASE_GAME_SPEED = 200; // base milliseconds between game updates
+const GRID_WIDTH = 50;
+const GRID_HEIGHT = 40;
+const CELL_SIZE = 12;
 const BULLET_SPEED = 2; // Bullets move faster than players
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
@@ -30,7 +30,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   
   // Calculate actual game speed based on multiplier
-  const GAME_SPEED = BASE_GAME_SPEED / speedMultiplier;
+  const GAME_SPEED =  BASE_GAME_SPEED / speedMultiplier;
   
   // Game state
   const [gameState, setGameState] = useState<GameState>(() => 
@@ -661,7 +661,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             <>
               <PlayerScore 
                 playerName="Player 1" 
-                score={bulletsCollected} 
+                score={bulletsCollected * speedMultiplier} 
                 color="blue"
                 label="Score" 
               />
