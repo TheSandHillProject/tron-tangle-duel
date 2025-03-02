@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import GameModeSelector from './GameModeSelector';
+import SpeedControl from './SpeedControl';
 import { 
   Direction, GameState, Position, Player, Token, Bullet,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
@@ -16,7 +16,7 @@ interface GameProps {
   onGameModeChange?: (mode: 'single' | 'two') => void;
 }
 
-const GAME_SPEED = 100; // milliseconds between game updates
+const BASE_GAME_SPEED = 100; // base milliseconds between game updates
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 60;
 const CELL_SIZE = 10;
@@ -25,6 +25,12 @@ const BULLET_SPEED = 2; // Bullets move faster than players
 const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
   // Game mode state (single or two player)
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
+  
+  // Speed multiplier (1x, 2x, 3x, 4x)
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
+  
+  // Calculate actual game speed based on multiplier
+  const GAME_SPEED = BASE_GAME_SPEED / speedMultiplier;
   
   // Game state
   const [gameState, setGameState] = useState<GameState>(() => 
@@ -633,6 +639,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       
       {/* Game mode selector - always show it */}
       <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+      
+      {/* Speed Control Slider */}
+      <SpeedControl speedMultiplier={speedMultiplier} onSpeedChange={handleSpeedChange} />
       
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
