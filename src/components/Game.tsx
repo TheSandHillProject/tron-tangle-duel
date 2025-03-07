@@ -11,6 +11,7 @@ import {
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
   checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition
 } from '@/utils/gameUtils';
+import { useToast } from "@/hooks/use-toast";
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -115,6 +116,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       setHighScore(parseInt(savedHighScore, 10));
     }
   }, []);
+  
+  // Add toast for visual feedback
+  const { toast } = useToast();
   
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
