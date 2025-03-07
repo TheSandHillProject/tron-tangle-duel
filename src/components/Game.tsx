@@ -5,11 +5,12 @@ import GameModeSelector from './GameModeSelector';
 import SpeedControl from './SpeedControl';
 import GameSetup from './GameSetup';
 import { 
-  Direction, GameState, Position, Player, Token, Bullet, PurpleBullet,
+  Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
   checkCollision, arePositionsEqual, resetRound, resetGame,
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
-  checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition
+  checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition,
+  generateHydroTronPosition
 } from '@/utils/gameUtils';
 import { useToast } from "@/hooks/use-toast";
 
@@ -365,14 +366,46 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   const updateGame = () => {
     setGameState(prevState => {
       // Clone the current state
-      const { players, gridSize, tokens, bullets, purpleBullet } = prevState;
+      const { players, gridSize, tokens, bullets, purpleBullet, hydroTrons } = prevState;
       const newPlayers = [...players].map(player => ({ ...player }));
       const newTokens = [...tokens];
       const newBullets = [...bullets];
+      const newHydroTrons = [...hydroTrons];
       const occupiedPositions: Position[] = [];
       let tokensCollectedThisUpdate = 0;
       let purpleBulletCollected = false;
       let newPurpleBullet = purpleBullet;
+      
+      // Check if we need to spawn HydroTron tokens (in single player mode only)
+      if (gameMode === 'single' && newPlayers[0].neutronBombs >= 2) {
+        // Calculate how many HydroTron tokens should exist
+        const desiredHydroTronCount = Math.floor(newPlayers[0].neutronBombs / 2);
+        
+        // If we don't have enough, add more
+        if (newHydroTrons.length < desiredHydroTronCount) {
+          // Generate positions for placing new HydroTron tokens
+          const allPositions = [
+            ...newPlayers.map(p => p.position),
+            ...newPlayers.flatMap(p => p.trail),
+            ...newTokens.filter(t => !t.collected).map(t => t.position),
+            ...newHydroTrons.map(h => h.position)
+          ];
+          
+          if (newPurpleBullet && !newPurpleBullet.collected) {
+            allPositions.push(newPurpleBullet.position);
+          }
+          
+          // Add new HydroTron tokens until we have the desired count
+          while (newHydroTrons.length < desiredHydroTronCount) {
+            const newPosition = generateHydroTronPosition(gridSize, allPositions);
+            newHydroTrons.push({
+              position: newPosition,
+              collected: false
+            });
+            allPositions.push(newPosition);
+          }
+        }
+      }
       
       // Check if we need to spawn a purple bullet (in single player mode only)
       if (gameMode === 'single' && 
@@ -392,7 +425,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         };
       }
       
-      // Check for token collection and purple bullet collection
+      // Check for token collection, purple bullet collection, and HydroTron collection
       for (let i = 0; i < newPlayers.length; i++) {
         if (!newPlayers[i].isAlive) continue;
         
@@ -444,6 +477,51 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             // Decrease player's bullet count and add a neutron bomb
             newPlayers[i].bullets -= NEUTRON_BOMB_THRESHOLD;
             newPlayers[i].neutronBombs += 1;
+          }
+        }
+        
+        // Check if player collected any HydroTron tokens
+        for (let j = 0; j < newHydroTrons.length; j++) {
+          if (!newHydroTrons[j].collected && 
+              arePositionsEqual(newPlayers[i].position, newHydroTrons[j].position)) {
+            // Only works in single player mode
+            if (gameMode === 'single' && i === 0) {
+              // Mark HydroTron as collected
+              newHydroTrons[j].collected = true;
+              
+              // Show toast notification
+              toast({
+                title: "HydroTron Collected!",
+                description: "Increased bullet capacity and added a bonus token.",
+              });
+              
+              // Add an extra token to the game
+              const allPositions = [
+                ...newPlayers.map(p => p.position),
+                ...newPlayers.flatMap(p => p.trail),
+                ...newTokens.map(t => t.position),
+                ...newHydroTrons.map(h => h.position)
+              ];
+              
+              if (newPurpleBullet && !newPurpleBullet.collected) {
+                allPositions.push(newPurpleBullet.position);
+              }
+              
+              const newTokenPosition = generateRandomPosition(gridSize, allPositions);
+              newTokens.push({
+                position: newTokenPosition,
+                collected: false
+              });
+              
+              // Add another token for good measure
+              const anotherTokenPosition = generateRandomPosition(gridSize, [...allPositions, newTokenPosition]);
+              newTokens.push({
+                position: anotherTokenPosition,
+                collected: false
+              });
+              
+              break;
+            }
           }
         }
       }
@@ -559,9 +637,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         }
       }
       
-      // Filter out inactive bullets and collected tokens
+      // Filter out inactive bullets, collected tokens, and collected HydroTrons
       const activeBullets = newBullets.filter(b => b.active);
       const availableTokens = newTokens.filter(t => !t.collected);
+      const availableHydroTrons = newHydroTrons.filter(h => !h.collected);
       
       // Check game over conditions
       const alivePlayers = newPlayers.filter(p => p.isAlive);
@@ -593,6 +672,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         tokens: availableTokens.length > 0 ? availableTokens : prevState.tokens,
         bullets: activeBullets,
         purpleBullet: purpleBulletCollected ? null : newPurpleBullet,
+        hydroTrons: availableHydroTrons,
         isGameOver,
         winner
       };
@@ -607,7 +687,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const { players, gridSize, cellSize, tokens, bullets, purpleBullet } = gameState;
+    const { players, gridSize, cellSize, tokens, bullets, purpleBullet, hydroTrons } = gameState;
     
     // Clear canvas
     ctx.fillStyle = '#0B1622';
@@ -684,6 +764,39 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       );
       ctx.stroke();
     }
+    
+    // Draw HydroTron tokens
+    hydroTrons.forEach(hydroTron => {
+      if (hydroTron.collected) return;
+      
+      ctx.fillStyle = '#F2FCE2'; // Soft green
+      ctx.shadowColor = '#F2FCE2';
+      ctx.shadowBlur = 15;
+      
+      // Draw circular HydroTron token
+      ctx.beginPath();
+      ctx.arc(
+        hydroTron.position.x * cellSize + cellSize / 2,
+        hydroTron.position.y * cellSize + cellSize / 2,
+        cellSize / 2 - 1,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      
+      // Add a pulsing effect with a green glow
+      ctx.strokeStyle = '#4DFF4D';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        hydroTron.position.x * cellSize + cellSize / 2,
+        hydroTron.position.y * cellSize + cellSize / 2,
+        cellSize / 2 + 3 + Math.sin(Date.now() / 150) * 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+    });
     
     // Draw player trails
     players.forEach(player => {

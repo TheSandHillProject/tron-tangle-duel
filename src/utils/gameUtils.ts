@@ -12,6 +12,11 @@ export type PurpleBullet = {
   collected: boolean;
 };
 
+export type HydroTron = {
+  position: Position;
+  collected: boolean;
+};
+
 export type Bullet = {
   position: Position;
   direction: Direction;
@@ -36,7 +41,8 @@ export type GameState = {
   players: Player[];
   tokens: Token[];
   bullets: Bullet[];
-  purpleBullet: PurpleBullet | null; // New property for the purple bullet
+  purpleBullet: PurpleBullet | null; // Property for the purple bullet
+  hydroTrons: HydroTron[]; // New property for HydroTron tokens
   gridSize: { width: number; height: number };
   cellSize: number;
   isGameOver: boolean;
@@ -137,6 +143,7 @@ export const initialGameState = (
     tokens: generateInitialTokens(gridSize, players),
     bullets: [],
     purpleBullet: null, // Initialize with no purple bullet
+    hydroTrons: [], // Initialize with no HydroTron tokens
     gridSize,
     cellSize,
     isGameOver: false,
@@ -233,6 +240,7 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
     tokens: generateInitialTokens(gameState.gridSize, newPlayers),
     bullets: [],
     purpleBullet: null, // Reset purple bullet
+    hydroTrons: [], // Reset HydroTron tokens
     isGameOver: false,
     winner: null,
   };
@@ -265,6 +273,14 @@ export const isValidDirectionChange = (currentDirection: Direction, newDirection
 
 // Generate a random position for the purple bullet
 export const generatePurpleBulletPosition = (
+  gridSize: { width: number; height: number },
+  occupiedPositions: Position[]
+): Position => {
+  return generateRandomPosition(gridSize, occupiedPositions);
+};
+
+// Generate a random position for a HydroTron token
+export const generateHydroTronPosition = (
   gridSize: { width: number; height: number },
   occupiedPositions: Position[]
 ): Position => {
