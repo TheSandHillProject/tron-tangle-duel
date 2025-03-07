@@ -711,14 +711,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       {/* Game mode selector - always show it */}
       <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
       
-      {/* Current grid and FPS info */}
-      <div className="glass-panel rounded-xl p-3 mb-4 animate-game-fade-in w-full max-w-md">
-        <div className="flex justify-between text-xs text-tron-text/80">
-          <div>Grid: {gridWidth} x {gridHeight}</div>
-          <div>Speed: {framesPerSecond} FPS</div>
-        </div>
-      </div>
-      
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
         <div className="flex flex-col items-center">
