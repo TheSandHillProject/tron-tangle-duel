@@ -120,6 +120,64 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   // Add toast for visual feedback
   const { toast } = useToast();
   
+  // Handle neutron bomb deployment
+  const handleDeployNeutronBomb = () => {
+    setGameState(prevState => {
+      // Only works in single player mode
+      if (gameMode !== 'single') return prevState;
+      
+      const player = prevState.players[0];
+      
+      // Player must be alive and have at least one neutron bomb
+      if (!player.isAlive || player.neutronBombs <= 0) return prevState;
+      
+      // Show toast notification
+      toast({
+        title: "NeuTron Bomb Deployed!",
+        description: "All trails have been cleared and an extra bullet added.",
+      });
+      
+      // Clone current game state
+      const newPlayers = [...prevState.players];
+      
+      // Update player - decrease neutron bomb count by 1
+      newPlayers[0] = {
+        ...player,
+        neutronBombs: player.neutronBombs - 1,
+        // Clear the player's trail
+        trail: []
+      };
+      
+      // Add an extra token to the game
+      let newTokens = [...prevState.tokens];
+      
+      // Get all occupied positions
+      const occupiedPositions = [
+        ...newPlayers.map(p => p.position),
+        ...newTokens.map(t => t.position)
+      ];
+      
+      // Generate a position for the new token
+      const newTokenPosition = generateRandomPosition(
+        prevState.gridSize,
+        occupiedPositions
+      );
+      
+      // Add new token
+      newTokens.push({
+        position: newTokenPosition,
+        collected: false
+      });
+      
+      // Return updated game state
+      return {
+        ...prevState,
+        players: newPlayers,
+        tokens: newTokens
+      };
+    });
+  };
+  
   // Handle keyboard input
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // If in setup mode, don't handle game controls
@@ -815,14 +873,16 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               color="blue" 
             />
           )}
-          <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-            Bullets: {gameState.players[0].bullets}
-          </div>
-          {gameMode === 'single' && (
-            <div className="mt-1 bg-purple-500/10 px-2 py-1 rounded text-xs text-purple-500">
-              NeuTron Bombs: {gameState.players[0].neutronBombs}
+          <div className="flex gap-2 mt-1">
+            <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+              Bullets: {gameState.players[0].bullets}
             </div>
-          )}
+            {gameMode === 'single' && (
+              <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                NeuTrons: {gameState.players[0].neutronBombs}
+              </div>
+            )}
+          </div>
         </div>
         
         {gameMode === 'two' && (
