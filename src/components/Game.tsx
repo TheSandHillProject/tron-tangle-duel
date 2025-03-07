@@ -5,11 +5,11 @@ import GameModeSelector from './GameModeSelector';
 import SpeedControl from './SpeedControl';
 import GameSetup from './GameSetup';
 import { 
-  Direction, GameState, Position, Player, Token, Bullet,
+  Direction, GameState, Position, Player, Token, Bullet, PurpleBullet,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
   checkCollision, arePositionsEqual, resetRound, resetGame,
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
-  checkBulletTrailCollision, removeTrailSegment
+  checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition
 } from '@/utils/gameUtils';
 
 interface GameProps {
@@ -22,6 +22,7 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 const DEFAULT_CELL_SIZE = 12;
 const BULLET_SPEED = 2; // Bullets move faster than players
+const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
   // Game mode state (single or two player)
@@ -122,7 +123,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     
     // Prevent default browser scrolling when using arrow keys, space, or WASD
     if (
-      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 's', 'a', 'd'].includes(e.key)
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 's', 'a', 'd', '1', '2'].includes(e.key)
     ) {
       e.preventDefault();
     }
@@ -147,6 +148,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       // Player 1 shoot (1 key in both modes)
       else if (e.key === '1' && player1.bullets > 0) {
         handlePlayerShoot(1);
+        return;
+      }
+      // Player 1 use Neutron Bomb (2 key in single player mode)
+      else if (e.key === '2' && player1.neutronBombs > 0) {
+        handleDeployNeutronBomb();
         return;
       }
     }
@@ -297,14 +303,34 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
   const updateGame = () => {
     setGameState(prevState => {
       // Clone the current state
-      const { players, gridSize, tokens, bullets } = prevState;
+      const { players, gridSize, tokens, bullets, purpleBullet } = prevState;
       const newPlayers = [...players].map(player => ({ ...player }));
       const newTokens = [...tokens];
       const newBullets = [...bullets];
       const occupiedPositions: Position[] = [];
       let tokensCollectedThisUpdate = 0;
+      let purpleBulletCollected = false;
+      let newPurpleBullet = purpleBullet;
       
-      // Check for token collection
+      // Check if we need to spawn a purple bullet (in single player mode only)
+      if (gameMode === 'single' && 
+          newPlayers[0].bullets >= NEUTRON_BOMB_THRESHOLD && 
+          !newPurpleBullet) {
+        // Generate positions for placing the purple bullet
+        const allPositions = [
+          ...newPlayers.map(p => p.position),
+          ...newPlayers.flatMap(p => p.trail),
+          ...newTokens.filter(t => !t.collected).map(t => t.position)
+        ];
+        
+        // Place purple bullet
+        newPurpleBullet = {
+          position: generatePurpleBulletPosition(gridSize, allPositions),
+          collected: false
+        };
+      }
+      
+      // Check for token collection and purple bullet collection
       for (let i = 0; i < newPlayers.length; i++) {
         if (!newPlayers[i].isAlive) continue;
         
@@ -329,6 +355,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               ...newTokens.filter(t => !t.collected).map(t => t.position)
             ];
             
+            if (newPurpleBullet && !newPurpleBullet.collected) {
+              allPositions.push(newPurpleBullet.position);
+            }
+            
             const newTokenPosition = generateRandomPosition(gridSize, allPositions);
             newTokens.push({
               position: newTokenPosition,
@@ -336,6 +366,22 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
             });
             
             break;
+          }
+        }
+        
+        // Check if player collected the purple bullet
+        if (newPurpleBullet && !newPurpleBullet.collected && 
+            arePositionsEqual(newPlayers[i].position, newPurpleBullet.position)) {
+          
+          // Only works in single player mode
+          if (gameMode === 'single' && i === 0) {
+            // Mark purple bullet as collected
+            newPurpleBullet.collected = true;
+            purpleBulletCollected = true;
+            
+            // Decrease player's bullet count and add a neutron bomb
+            newPlayers[i].bullets -= NEUTRON_BOMB_THRESHOLD;
+            newPlayers[i].neutronBombs += 1;
           }
         }
       }
@@ -484,6 +530,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         players: newPlayers,
         tokens: availableTokens.length > 0 ? availableTokens : prevState.tokens,
         bullets: activeBullets,
+        purpleBullet: purpleBulletCollected ? null : newPurpleBullet,
         isGameOver,
         winner
       };
@@ -498,7 +545,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const { players, gridSize, cellSize, tokens, bullets } = gameState;
+    const { players, gridSize, cellSize, tokens, bullets, purpleBullet } = gameState;
     
     // Clear canvas
     ctx.fillStyle = '#0B1622';
@@ -544,6 +591,37 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       );
       ctx.fill();
     });
+    
+    // Draw purple bullet if it exists
+    if (purpleBullet && !purpleBullet.collected) {
+      ctx.fillStyle = '#BB00FF'; // Purple color
+      ctx.shadowColor = '#BB00FF';
+      ctx.shadowBlur = 15;
+      
+      // Draw circular purple bullet (slightly larger than normal tokens)
+      ctx.beginPath();
+      ctx.arc(
+        purpleBullet.position.x * cellSize + cellSize / 2,
+        purpleBullet.position.y * cellSize + cellSize / 2,
+        cellSize / 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      
+      // Add a pulsing effect
+      ctx.strokeStyle = '#BB00FF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        purpleBullet.position.x * cellSize + cellSize / 2,
+        purpleBullet.position.y * cellSize + cellSize / 2,
+        cellSize / 2 + 2 + Math.sin(Date.now() / 200) * 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+    }
     
     // Draw player trails
     players.forEach(player => {
@@ -736,6 +814,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
           <div className="mt-1 bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
             Bullets: {gameState.players[0].bullets}
           </div>
+          {gameMode === 'single' && (
+            <div className="mt-1 bg-purple-500/10 px-2 py-1 rounded text-xs text-purple-500">
+              NeuTron Bombs: {gameState.players[0].neutronBombs}
+            </div>
+          )}
         </div>
         
         {gameMode === 'two' && (
@@ -843,12 +926,14 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               <li>← - Move Left</li>
               <li>→ - Move Right</li>
               <li>1 - Shoot Bullet</li>
+              <li>2 - Deploy NeuTron Bomb</li>
               <li>Space - Pause/Resume</li>
             </ul>
             <div className="mt-2 pt-2 border-t border-tron-text/10">
               <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
               <p>Use bullets to cut your trail and create shortcuts.</p>
-              <p>Try to collect as many bullets as possible!</p>
+              <p className="text-purple-500 font-medium mt-1">With 10 bullets, a purple NeuTron Bomb token appears!</p>
+              <p>Collect it and use the 2 key to clear all walls and add an extra bullet on the map.</p>
             </div>
           </div>
         ) : (

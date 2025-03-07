@@ -1,9 +1,13 @@
-
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
 
 export type Token = {
+  position: Position;
+  collected: boolean;
+};
+
+export type PurpleBullet = {
   position: Position;
   collected: boolean;
 };
@@ -25,12 +29,14 @@ export type Player = {
   trail: Position[];
   isAlive: boolean;
   bullets: number;
+  neutronBombs: number; // New property for Neutron Bombs
 };
 
 export type GameState = {
   players: Player[];
   tokens: Token[];
   bullets: Bullet[];
+  purpleBullet: PurpleBullet | null; // New property for the purple bullet
   gridSize: { width: number; height: number };
   cellSize: number;
   isGameOver: boolean;
@@ -55,6 +61,7 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
+    neutronBombs: 0, // Initialize with 0 Neutron Bombs
   };
 
   // In single player mode, only return player 1
@@ -73,6 +80,7 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
+    neutronBombs: 0, // Initialize with 0 Neutron Bombs
   };
 
   return [player1, player2];
@@ -128,6 +136,7 @@ export const initialGameState = (
     players,
     tokens: generateInitialTokens(gridSize, players),
     bullets: [],
+    purpleBullet: null, // Initialize with no purple bullet
     gridSize,
     cellSize,
     isGameOver: false,
@@ -215,6 +224,7 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
   // Preserve scores from previous round
   for (let i = 0; i < Math.min(newPlayers.length, gameState.players.length); i++) {
     newPlayers[i].score = gameState.players[i].score;
+    newPlayers[i].neutronBombs = gameState.players[i].neutronBombs; // Preserve neutron bombs count
   }
   
   return {
@@ -222,6 +232,7 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
     players: newPlayers,
     tokens: generateInitialTokens(gameState.gridSize, newPlayers),
     bullets: [],
+    purpleBullet: null, // Reset purple bullet
     isGameOver: false,
     winner: null,
   };
@@ -250,4 +261,12 @@ export const getOppositeDirection = (direction: Direction): Direction => {
 // Check if direction change is valid (can't go directly opposite)
 export const isValidDirectionChange = (currentDirection: Direction, newDirection: Direction): boolean => {
   return getOppositeDirection(currentDirection) !== newDirection;
+};
+
+// Generate a random position for the purple bullet
+export const generatePurpleBulletPosition = (
+  gridSize: { width: number; height: number },
+  occupiedPositions: Position[]
+): Position => {
+  return generateRandomPosition(gridSize, occupiedPositions);
 };
