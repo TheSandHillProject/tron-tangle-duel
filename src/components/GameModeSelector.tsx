@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useGameContext } from '@/context/GameContext';
 
 interface GameModeSelectorProps {
   gameMode: 'single' | 'two';
@@ -8,6 +9,12 @@ interface GameModeSelectorProps {
 }
 
 const GameModeSelector: React.FC<GameModeSelectorProps> = ({ gameMode, onGameModeChange }) => {
+  const { setNavigatingFrom } = useGameContext();
+  
+  const handleLeaderboardClick = () => {
+    setNavigatingFrom(window.location.pathname);
+  };
+
   return (
     <div className="flex items-center gap-2 animate-game-fade-in">
       <button 
@@ -35,6 +42,7 @@ const GameModeSelector: React.FC<GameModeSelectorProps> = ({ gameMode, onGameMod
       <Link 
         to="/leaderboard" 
         className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
+        onClick={handleLeaderboardClick}
       >
         Leaderboard
       </Link>

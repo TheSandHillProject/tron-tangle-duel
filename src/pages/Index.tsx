@@ -1,8 +1,16 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useGameContext } from '@/context/GameContext';
 
 const Index = () => {
+  const { setNavigatingFrom, setSkipSetup } = useGameContext();
+  
+  const handleNavigate = () => {
+    setNavigatingFrom('/');
+    setSkipSetup(false); // Always show setup when coming from homepage
+  };
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-tron-background py-8 px-4">
       <div className="w-full max-w-4xl flex flex-col items-center animate-game-fade-in">
@@ -15,6 +23,7 @@ const Index = () => {
             to="/game/single" 
             className="px-10 py-5 rounded-lg border-2 border-tron-blue text-tron-blue hover:bg-tron-blue/20 
             shadow-neon-blue transition-all duration-300 font-medium font-space text-xl"
+            onClick={handleNavigate}
           >
             SINGLE PLAYER
           </Link>
@@ -23,6 +32,7 @@ const Index = () => {
             to="/game/two" 
             className="px-10 py-5 rounded-lg border-2 border-tron-orange text-tron-orange hover:bg-tron-orange/20
             shadow-neon-orange transition-all duration-300 font-medium font-space text-xl"
+            onClick={handleNavigate}
           >
             TWO PLAYERS
           </Link>

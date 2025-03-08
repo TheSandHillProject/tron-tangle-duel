@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -19,13 +20,30 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
-  const { skipSetup, setSkipSetup, setLastGameMode } = useGameContext();
+  const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom } = useGameContext();
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
   const [framesPerSecond, setFramesPerSecond] = useState<number>(2);
-  const [isSetup, setIsSetup] = useState<boolean>(!skipSetup);
+  const [isSetup, setIsSetup] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Determine if we should show setup based on navigation source
+    if (navigatingFrom === '/') {
+      // Coming from homepage - always show setup
+      setIsSetup(true);
+    } else if (navigatingFrom === '/leaderboard') {
+      // Coming from leaderboard - skip setup if skipSetup is true
+      setIsSetup(!skipSetup);
+    } else {
+      // Default behavior
+      setIsSetup(!skipSetup);
+    }
+    
+    // Reset navigation source
+    setNavigatingFrom(null);
+  }, [skipSetup, navigatingFrom, setNavigatingFrom]);
 
   useEffect(() => {
     setGameMode(initialGameMode);

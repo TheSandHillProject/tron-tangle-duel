@@ -6,6 +6,8 @@ interface GameContextType {
   setSkipSetup: (skip: boolean) => void;
   lastGameMode: 'single' | 'two' | null;
   setLastGameMode: (mode: 'single' | 'two' | null) => void;
+  navigatingFrom: string | null;
+  setNavigatingFrom: (path: string | null) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -13,13 +15,16 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [skipSetup, setSkipSetup] = useState(false);
   const [lastGameMode, setLastGameMode] = useState<'single' | 'two' | null>(null);
+  const [navigatingFrom, setNavigatingFrom] = useState<string | null>(null);
 
   return (
     <GameContext.Provider value={{ 
       skipSetup, 
       setSkipSetup, 
       lastGameMode, 
-      setLastGameMode 
+      setLastGameMode,
+      navigatingFrom,
+      setNavigatingFrom
     }}>
       {children}
     </GameContext.Provider>
