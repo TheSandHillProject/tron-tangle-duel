@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Clock, Calendar } from 'lucide-react';
 import { useGameContext } from '@/context/GameContext';
+import BackToHome from '@/components/BackToHome';
 
 interface LeaderboardEntry {
   id: number;
@@ -182,6 +183,8 @@ const Leaderboard = () => {
             </TabsContent>
           </Tabs>
         </div>
+        
+        <BackToHome />
       </div>
     </div>
   );

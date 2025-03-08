@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import Game from '@/components/Game';
 import { useGameContext } from '@/context/GameContext';
+import BackToHome from '@/components/BackToHome';
 
 const GamePage = () => {
   const { mode } = useParams<{ mode: string }>();
@@ -36,6 +37,8 @@ const GamePage = () => {
           onGameModeChange={handleGameModeChange}
         />
       </div>
+      
+      <BackToHome />
       
       <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
         <p className="text-center">
