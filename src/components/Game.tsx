@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -9,6 +8,7 @@ import GameCanvas from './GameCanvas';
 import GameOverlay from './GameOverlay';
 import GameInstructions from './GameInstructions';
 import { useGameLogic } from '@/hooks/useGameLogic';
+import { useGameContext } from '@/context/GameContext';
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -19,19 +19,22 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
+  const { skipSetup, setSkipSetup, setLastGameMode } = useGameContext();
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
   const [framesPerSecond, setFramesPerSecond] = useState<number>(2);
-  const [isSetup, setIsSetup] = useState<boolean>(true);
+  const [isSetup, setIsSetup] = useState<boolean>(!skipSetup);
 
   useEffect(() => {
     setGameMode(initialGameMode);
-  }, [initialGameMode]);
+    setLastGameMode(initialGameMode);
+  }, [initialGameMode, setLastGameMode]);
 
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
+    setLastGameMode(mode);
     
     if (onGameModeChange) {
       onGameModeChange(mode);
@@ -43,7 +46,16 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     setGridHeight(height);
     setFramesPerSecond(fps);
     setIsSetup(false);
+    setSkipSetup(true);
   };
+
+  useEffect(() => {
+    return () => {
+      if (!isSetup) {
+        setSkipSetup(true);
+      }
+    };
+  }, [isSetup, setSkipSetup]);
 
   const {
     gameState,

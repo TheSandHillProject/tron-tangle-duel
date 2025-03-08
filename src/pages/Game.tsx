@@ -1,16 +1,25 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import Game from '@/components/Game';
+import { useGameContext } from '@/context/GameContext';
 
 const GamePage = () => {
   const { mode } = useParams<{ mode: string }>();
   const navigate = useNavigate();
+  const { setLastGameMode } = useGameContext();
   
   // Validate mode parameter
   if (mode !== 'single' && mode !== 'two') {
     return <Navigate to="/" replace />;
   }
+  
+  // Update last game mode in context
+  useEffect(() => {
+    if (mode === 'single' || mode === 'two') {
+      setLastGameMode(mode);
+    }
+  }, [mode, setLastGameMode]);
   
   // Handle game mode change from the Game component
   const handleGameModeChange = (newMode: 'single' | 'two') => {

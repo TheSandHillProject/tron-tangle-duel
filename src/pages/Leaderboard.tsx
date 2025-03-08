@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Clock, Calendar } from 'lucide-react';
+import { useGameContext } from '@/context/GameContext';
 
 interface LeaderboardEntry {
   id: number;
@@ -99,6 +99,10 @@ const LeaderboardTable: React.FC<LeaderboardProps> = ({ entries, userCount, type
 
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState("daily");
+  const { lastGameMode } = useGameContext();
+  
+  const singlePlayerRoute = lastGameMode === 'single' ? "/game/single" : "/game/single";
+  const twoPlayerRoute = lastGameMode === 'two' ? "/game/two" : "/game/two";
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-tron-background py-12 px-4">
@@ -109,14 +113,14 @@ const Leaderboard = () => {
 
         <div className="flex items-center gap-6 mb-8">
           <Link 
-            to="/game/single" 
+            to={singlePlayerRoute}
             className="px-3 py-1.5 rounded-lg bg-tron-blue/10 text-tron-blue/80 hover:bg-tron-blue/20 transition-all"
           >
             Single Player
           </Link>
           
           <Link 
-            to="/game/two" 
+            to={twoPlayerRoute}
             className="px-3 py-1.5 rounded-lg bg-tron-orange/10 text-tron-orange/80 hover:bg-tron-orange/20 transition-all"
           >
             Two Players
