@@ -138,17 +138,17 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           ) : (
             <PlayerScore 
               playerName="Player 1" 
-              score={gameState.players[0].score} 
+              score={gameState.players[0]?.score || 0} 
               color="blue" 
             />
           )}
           <div className="flex gap-2 mt-1">
             <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-              Bullets: {gameState.players[0].bullets}
+              Bullets: {gameState.players[0]?.bullets || 0}
             </div>
             {gameMode === 'single' && (
               <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                NeuTrons: {gameState.players[0].neutronBombs}
+                NeuTrons: {gameState.players[0]?.neutronBombs || 0}
               </div>
             )}
           </div>
@@ -163,11 +163,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             <div className="flex flex-col items-center">
               <PlayerScore 
                 playerName="Player 2" 
-                score={gameState.players[1].score} 
+                score={gameState.players[1]?.score || 0} 
                 color="orange" 
               />
               <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
-                Bullets: {gameState.players[1].bullets}
+                Bullets: {gameState.players[1]?.bullets || 0}
               </div>
             </div>
           </>
@@ -208,7 +208,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         onPauseGame={handlePauseGame}
         onResumeGame={handleResumeGame}
         gameMode={gameMode}
-        canDeployNeutronBomb={gameMode === 'single' && gameState.players[0].neutronBombs > 0}
+        canDeployNeutronBomb={gameMode === 'single' && (gameState.players[0]?.neutronBombs > 0 || false)}
         onDeployNeutronBomb={handleDeployNeutronBomb}
       />
       
