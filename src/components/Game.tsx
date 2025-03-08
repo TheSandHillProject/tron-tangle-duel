@@ -17,7 +17,7 @@ interface GameProps {
 const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
-const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }) => {
+const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
   // Game mode state (single or two player)
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   
@@ -88,7 +88,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
         </div>
         
         <GameModeSelector 
-          initialGameMode={gameMode} 
+          gameMode={gameMode} 
           onGameModeChange={handleGameModeChange} 
         />
         
@@ -116,7 +116,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       
       {/* Game mode selector - always show it */}
       <GameModeSelector 
-        initialGameMode={gameMode} 
+        gameMode={gameMode} 
         onGameModeChange={handleGameModeChange} 
       />
       

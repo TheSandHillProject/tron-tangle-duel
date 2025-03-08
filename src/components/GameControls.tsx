@@ -9,6 +9,9 @@ interface GameControlsProps {
   onResetRound: () => void;
   onPauseGame: () => void;
   onResumeGame: () => void;
+  gameMode: 'single' | 'two';
+  canDeployNeutronBomb: boolean;
+  onDeployNeutronBomb: () => void;
 }
 
 const GameControls: React.FC<GameControlsProps> = ({
@@ -18,6 +21,9 @@ const GameControls: React.FC<GameControlsProps> = ({
   onResetRound,
   onPauseGame,
   onResumeGame,
+  gameMode,
+  canDeployNeutronBomb,
+  onDeployNeutronBomb,
 }) => {
   return (
     <div className="glass-panel rounded-xl p-4 mt-4 flex flex-wrap justify-center gap-3 animate-game-fade-in">
@@ -51,6 +57,15 @@ const GameControls: React.FC<GameControlsProps> = ({
             Pause
           </Button>
         )
+      )}
+      
+      {gameMode === 'single' && canDeployNeutronBomb && (
+        <Button
+          onClick={onDeployNeutronBomb}
+          className="btn-glow bg-purple-500/20 text-purple-400 border border-purple-500/50 hover:bg-purple-500/30"
+        >
+          Deploy NeuTron
+        </Button>
       )}
     </div>
   );

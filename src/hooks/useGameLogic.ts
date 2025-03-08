@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron,
@@ -375,7 +374,7 @@ export const useGameLogic = ({
             newPlayers[i].bullets -= NEUTRON_BOMB_THRESHOLD;
             newPlayers[i].neutronBombs += 1;
             
-            // CHANGE: Reset player's trail completely when collecting a NeuTron
+            // Reset player's trail completely when collecting a NeuTron
             newPlayers[i].trail = [];
           }
         }
