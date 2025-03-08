@@ -26,6 +26,14 @@ const Index = () => {
           >
             TWO PLAYERS
           </Link>
+          
+          <Link 
+            to="/leaderboard" 
+            className="px-10 py-5 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
+            shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space text-xl"
+          >
+            LEADERBOARD
+          </Link>
         </div>
 
         {/* Game instructions */}
