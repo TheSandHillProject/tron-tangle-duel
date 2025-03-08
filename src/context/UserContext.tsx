@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 interface User {
   id: string;
+  email: string;
   username: string;
   lastSeen: Date;
 }
@@ -10,14 +11,14 @@ interface User {
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  login: (username: string) => void;
+  login: (email: string, username: string) => void;
   logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Mock API functions (these would connect to your backend)
-const mockLoginUser = async (username: string): Promise<User> => {
+const mockLoginUser = async (email: string, username: string): Promise<User> => {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 500));
   
@@ -25,6 +26,7 @@ const mockLoginUser = async (username: string): Promise<User> => {
   // and retrieve or create the user
   return {
     id: `user-${Math.floor(Math.random() * 100000)}`,
+    email,
     username,
     lastSeen: new Date()
   };
@@ -78,10 +80,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [user]);
 
-  const login = async (username: string) => {
+  const login = async (email: string, username: string) => {
     setIsLoading(true);
     try {
-      const newUser = await mockLoginUser(username);
+      const newUser = await mockLoginUser(email, username);
       setUser(newUser);
       localStorage.setItem('tron-user', JSON.stringify(newUser));
     } catch (error) {
