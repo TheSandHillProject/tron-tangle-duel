@@ -107,13 +107,28 @@ const Leaderboard = () => {
           LEADERBOARD
         </h1>
 
-        <Link 
-          to="/" 
-          className="mb-8 px-6 py-2 rounded-lg border border-tron-text/30 text-tron-text/70 hover:bg-white/5 
-          transition-all duration-300 font-medium"
-        >
-          ← Back to Home
-        </Link>
+        <div className="flex items-center gap-6 mb-8">
+          <Link 
+            to="/game/single" 
+            className="px-3 py-1.5 rounded-lg bg-tron-blue/10 text-tron-blue/80 hover:bg-tron-blue/20 transition-all"
+          >
+            Single Player
+          </Link>
+          
+          <Link 
+            to="/game/two" 
+            className="px-3 py-1.5 rounded-lg bg-tron-orange/10 text-tron-orange/80 hover:bg-tron-orange/20 transition-all"
+          >
+            Two Players
+          </Link>
+          
+          <Link 
+            to="/leaderboard" 
+            className="px-3 py-1.5 rounded-lg bg-purple-500 text-white font-medium shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+          >
+            Leaderboard
+          </Link>
+        </div>
         
         <div className="w-full">
           <Tabs defaultValue="daily" value={activeTab} onValueChange={setActiveTab} className="w-full">
