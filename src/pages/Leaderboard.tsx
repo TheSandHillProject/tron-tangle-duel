@@ -186,6 +186,12 @@ const Leaderboard = () => {
         </div>
         
         <BackToHome />
+
+        <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
+        <p className="text-center">
+          &copy; 2025 Fermi Strategies, Inc. All Rights Reserved.
+        </p>
+      </footer>
       </div>
     </div>
   );

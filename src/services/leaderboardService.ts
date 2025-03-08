@@ -20,11 +20,11 @@ const mockFetchLeaderboard = async (period: 'daily' | 'weekly' | 'monthly'): Pro
   
   // Generate some random data based on the period
   const baseEntries = [
-    { id: 1, username: "TronMaster", score: 5200, rank: 1 },
-    { id: 2, username: "LightCycle", score: 4800, rank: 2 },
-    { id: 3, username: "GridRunner", score: 4500, rank: 3 },
-    { id: 4, username: "DiscUser", score: 4100, rank: 4 },
-    { id: 5, username: "ByteRider", score: 3900, rank: 5 },
+    { id: 1, username: "TronMaster", score: 52, rank: 1 },
+    { id: 2, username: "LightCycle", score: 48, rank: 2 },
+    { id: 3, username: "GridRunner", score: 45, rank: 3 },
+    { id: 4, username: "DiscUser", score: 41, rank: 4 },
+    { id: 5, username: "ByteRider", score: 39, rank: 5 },
   ];
   
   // Multiply scores based on time period
@@ -43,9 +43,9 @@ const mockGetLeaderboardStats = async (period: 'daily' | 'weekly' | 'monthly'): 
   
   // Return mock stats based on period
   const userCounts = {
-    daily: 42,
-    weekly: 156,
-    monthly: 372
+    daily: 1042,
+    weekly: 12891,
+    monthly: 37203
   };
   
   return {
