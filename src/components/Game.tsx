@@ -12,6 +12,7 @@ import {
   checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition,
   generateHydroTronPosition
 } from '@/utils/gameUtils';
+import { useToast } from "@/hooks/use-toast";
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -117,6 +118,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
     }
   }, []);
   
+  // Add toast for visual feedback
+  const { toast } = useToast();
+  
   // Handle neutron bomb deployment
   const handleDeployNeutronBomb = () => {
     setGameState(prevState => {
@@ -127,6 +131,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       
       // Player must be alive and have at least one neutron bomb
       if (!player.isAlive || player.neutronBombs <= 0) return prevState;
+      
+      // Show toast notification
+      toast({
+        title: "NeuTron Bomb Deployed!",
+        description: "All trails have been cleared and an extra bullet added.",
+      });
       
       // Clone current game state
       const newPlayers = [...prevState.players];
@@ -481,6 +491,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               
               // Decrease neutron bombs by 2 when collecting a HydroTron
               newPlayers[i].neutronBombs = Math.max(0, newPlayers[i].neutronBombs - 2);
+              
+              // Show toast notification
+              toast({
+                title: "HydroTron Collected!",
+                description: "Increased bullet capacity and added a bonus token.",
+              });
               
               // Add an extra token to the game
               const allPositions = [
@@ -911,143 +927,228 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
       clearInterval(gameLoopRef.current);
     }
     
-    if (!isSetup) {
-      startGameLoop();
-    }
+    startGameLoop();
   };
   
-  return (
-    <div className="game-container flex flex-col items-center">
-      {isSetup ? (
-        <GameSetup
-          onStart={applyGameSetup}
-          initialWidth={gridWidth}
-          initialHeight={gridHeight}
-          initialFps={framesPerSecond}
+  // If in setup mode, show the setup screen
+  if (isSetup) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className="mb-2 text-center animate-game-fade-in">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
+            BATTLE TRON
+          </h1>
+        </div>
+        
+        <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+        
+        <GameSetup 
+          onSetupComplete={applyGameSetup}
+          initialGridWidth={gridWidth}
+          initialGridHeight={gridHeight}
+          initialFPS={framesPerSecond}
         />
-      ) : (
-        <>
-          <div className="flex justify-between items-center w-full mb-4">
-            <GameModeSelector mode={gameMode} onChange={handleGameModeChange} />
-            <SpeedControl value={speedMultiplier} onChange={handleSpeedChange} />
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-4 w-full">
-            {/* Player scores */}
-            <div className="flex flex-row md:flex-col gap-4 md:order-1">
-              {gameState.players.map(player => (
-                <PlayerScore
-                  key={player.id}
-                  player={player}
-                  isSinglePlayer={gameMode === 'single'}
-                  bulletsCollected={player.id === 1 ? bulletsCollected : undefined}
-                  highScore={player.id === 1 ? highScore : undefined}
-                />
-              ))}
-            </div>
-            
-            {/* Game canvas */}
-            <div 
-              className="relative border border-tron-border rounded md:order-2"
-              style={{ 
-                width: canvasWidth, 
-                height: canvasHeight,
-                maxWidth: '100%',
-                overflow: 'hidden'
-              }}
-            >
-              <canvas
-                ref={canvasRef}
-                width={canvasWidth}
-                height={canvasHeight}
-                style={{ maxWidth: '100%' }}
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex flex-col items-center">
+      {/* Game title and round */}
+      <div className="mb-2 text-center animate-game-fade-in">
+        <div className="text-xs font-medium text-tron-text/60 tracking-widest uppercase mb-1">
+          Round {gameState.round}
+        </div>
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
+          BATTLE TRON
+        </h1>
+      </div>
+      
+      {/* Game mode selector - always show it */}
+      <GameModeSelector gameMode={gameMode} onGameModeChange={handleGameModeChange} />
+      
+      {/* Player scores, bullet counts, and timer */}
+      <div className="flex justify-center items-center gap-12 mb-4">
+        <div className="flex flex-col items-center">
+          {gameMode === 'single' ? (
+            <>
+              <PlayerScore 
+                playerName="Player 1" 
+                score={bulletsCollected * speedMultiplier} 
+                color="blue"
+                label="Score" 
               />
-              
-              {(gameState.isGamePaused || gameState.isGameOver) && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center p-4">
-                  {gameState.isGameOver ? (
-                    <>
-                      <h2 className="text-3xl font-bold mb-4 text-white">
-                        {gameMode === 'single' 
-                          ? 'Game Over!' 
-                          : gameState.winner === null
-                            ? 'Draw!'
-                            : `Player ${gameState.winner} Wins!`
-                        }
-                      </h2>
-                      {gameMode === 'single' && (
-                        <p className="text-xl mb-6 text-white">
-                          Bullets collected: {bulletsCollected} 
-                          {bulletsCollected >= highScore && highScore > 0 && ' (New High Score!)'}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <h2 className="text-3xl font-bold mb-4 text-white">Paused</h2>
-                  )}
-                </div>
-              )}
+              <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
+                High Score: {highScore}
+              </div>
+            </>
+          ) : (
+            <PlayerScore 
+              playerName="Player 1" 
+              score={gameState.players[0].score} 
+              color="blue" 
+            />
+          )}
+          <div className="flex gap-2 mt-1">
+            <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+              Bullets: {gameState.players[0].bullets}
             </div>
-            
-            {/* Game controls */}
-            <div className="md:order-3">
-              <GameControls
-                isGameOver={gameState.isGameOver}
-                isGamePaused={gameState.isGamePaused}
-                onReset={handleResetRound}
-                onNewGame={handleStartNewGame}
-                onPause={handlePauseGame}
-                onResume={handleResumeGame}
-                canDeployNeutronBomb={
-                  gameMode === 'single' && 
-                  gameState.players[0].isAlive && 
-                  gameState.players[0].neutronBombs > 0
-                }
-                onDeployNeutronBomb={handleDeployNeutronBomb}
-                gameMode={gameMode}
-              />
-            </div>
-          </div>
-          
-          {/* Game instructions */}
-          <div className="mt-8 text-sm text-tron-text/70 max-w-2xl">
-            <h3 className="font-semibold">Controls:</h3>
-            {gameMode === 'single' ? (
-              <p>
-                Use <span className="text-tron-blue">Arrow keys</span> to move. Press <span className="text-tron-blue">1</span> to 
-                shoot a bullet (if available). Press <span className="text-tron-blue">2</span> to deploy a neutron bomb 
-                (if available).
-              </p>
-            ) : (
-              <p>
-                Player 1: <span className="text-tron-blue">WASD</span> to move, <span className="text-tron-blue">1</span> to 
-                shoot. Player 2: <span className="text-tron-blue">Arrow keys</span> to move, <span className="text-tron-blue">/</span> to 
-                shoot.
-              </p>
-            )}
-            <p>
-              Press <span className="text-tron-blue">Space</span> to pause/resume the game.
-            </p>
             {gameMode === 'single' && (
-              <div className="mt-2">
-                <p>
-                  <span className="text-yellow-500">⬤</span> Yellow Tokens: Collect to gain bullets.
-                </p>
-                <p>
-                  <span className="text-purple-500">⬤</span> Purple Neutron Bullet: Collect when you have {NEUTRON_BOMB_THRESHOLD}+ bullets to 
-                  gain a Neutron Bomb (consumes {NEUTRON_BOMB_THRESHOLD} bullets).
-                </p>
-                <p>
-                  <span className="text-green-500">⬤</span> Green HydroTron: Appear when you have 2+ Neutron Bombs. Collecting one
-                  reduces your Neutron Bombs by 2 but adds two extra yellow tokens to the grid.
-                </p>
+              <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                NeuTrons: {gameState.players[0].neutronBombs}
               </div>
             )}
           </div>
-        </>
-      )}
+        </div>
+        
+        {gameMode === 'two' && (
+          <>
+            <div className="text-center">
+              <div className="text-xs text-tron-text/60 font-medium mb-1">VS</div>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <PlayerScore 
+                playerName="Player 2" 
+                score={gameState.players[1].score} 
+                color="orange" 
+              />
+              <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
+                Bullets: {gameState.players[1].bullets}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Game status overlay */}
+      <div className="relative">
+        {(gameState.isGameOver || gameState.isGamePaused) && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-tron-background/70 backdrop-blur-sm animate-game-fade-in">
+            <div className="text-center">
+              {gameState.isGameOver && (
+                <>
+                  <h2 className="text-2xl font-bold mb-4">
+                    {gameMode === 'single' ? (
+                      <span className="text-tron-text">
+                        Game Over!
+                        {bulletsCollected > 0 && (
+                          <div className="text-lg mt-2">
+                            You collected <span className="text-tron-blue">{bulletsCollected}</span> bullets
+                            {bulletsCollected >= highScore && highScore > 0 && (
+                              <div className="text-tron-blue animate-pulse mt-1">New High Score!</div>
+                            )}
+                          </div>
+                        )}
+                      </span>
+                    ) : gameState.winner ? (
+                      <span className={gameState.winner === 1 ? 'text-tron-blue' : 'text-tron-orange'}>
+                        Player {gameState.winner} Wins!
+                      </span>
+                    ) : (
+                      <span className="text-tron-text">It's a Draw!</span>
+                    )}
+                  </h2>
+                  <button 
+                    onClick={handleResetRound}
+                    className="btn-glow px-6 py-2 bg-tron-blue/20 text-tron-blue border border-tron-blue/50 hover:bg-tron-blue/30 rounded-lg"
+                  >
+                    {gameMode === 'single' ? 'Play Again' : 'Next Round'}
+                  </button>
+                </>
+              )}
+              
+              {gameState.isGamePaused && !gameState.isGameOver && (
+                <>
+                  <h2 className="text-2xl font-bold mb-4 text-tron-text">Game Paused</h2>
+                  <button 
+                    onClick={handleResumeGame}
+                    className="btn-glow px-6 py-2 bg-tron-orange/20 text-tron-orange border border-tron-orange/50 hover:bg-tron-orange/30 rounded-lg"
+                  >
+                    Resume
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Game canvas */}
+        <div className="glass-panel rounded-xl p-2 overflow-hidden animate-game-fade-in">
+          <canvas 
+            ref={canvasRef}
+            width={canvasWidth}
+            height={canvasHeight}
+            className="rounded"
+          />
+        </div>
+      </div>
+      
+      {/* Game controls */}
+      <GameControls 
+        isGameOver={gameState.isGameOver}
+        isGamePaused={gameState.isGamePaused}
+        onStartNewGame={handleStartNewGame}
+        onResetRound={handleResetRound}
+        onPauseGame={handlePauseGame}
+        onResumeGame={handleResumeGame}
+      />
+      
+      {/* Game instructions */}
+      <div className="mt-6 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
+        <h3 className="font-medium mb-2 text-tron-text text-center">How to Play</h3>
+        {gameMode === 'single' ? (
+          <div className="text-center">
+            <p className="text-tron-blue font-medium mb-1">Controls</p>
+            <ul className="space-y-1">
+              <li>↑ - Move Up</li>
+              <li>↓ - Move Down</li>
+              <li>← - Move Left</li>
+              <li>→ - Move Right</li>
+              <li>1 - Shoot Bullet</li>
+              <li>2 - Deploy NeuTron Bomb</li>
+              <li>Space - Pause/Resume</li>
+            </ul>
+            <div className="mt-2 pt-2 border-t border-tron-text/10">
+              <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
+              <p>Use bullets to cut your trail and create shortcuts.</p>
+              <p className="text-purple-500 font-medium mt-1">With 10 bullets, a purple NeuTron Bomb token appears!</p>
+              <p>Collect it and use the 2 key to clear all walls and add an extra bullet on the map.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <p className="text-tron-blue font-medium mb-1">Player 1</p>
+              <ul className="space-y-1">
+                <li>W - Move Up</li>
+                <li>S - Move Down</li>
+                <li>A - Move Left</li>
+                <li>D - Move Right</li>
+                <li>1 - Shoot Bullet</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-tron-orange font-medium mb-1">Player 2</p>
+              <ul className="space-y-1">
+                <li>↑ - Move Up</li>
+                <li>↓ - Move Down</li>
+                <li>← - Move Left</li>
+                <li>→ - Move Right</li>
+                <li>/ - Shoot Bullet</li>
+              </ul>
+            </div>
+            <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10">
+              <p className="mb-1">Space - Pause/Resume</p>
+              <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
+              <p>Use bullets to cut your opponent's trail or your own trail.</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default Game;
+
