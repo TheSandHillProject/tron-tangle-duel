@@ -147,9 +147,14 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
               Bullets: {gameState.players[0]?.bullets || 0}
             </div>
             {gameMode === 'single' && (
-              <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                NeuTrons: {gameState.players[0]?.neutronBombs || 0}
-              </div>
+              <>
+                <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                  NeuTrons: {gameState.players[0]?.neutronBombs || 0}
+                </div>
+                <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                  HydroTrons: {gameState.players[0]?.hydroTronsCollected || 0}
+                </div>
+              </>
             )}
           </div>
         </div>

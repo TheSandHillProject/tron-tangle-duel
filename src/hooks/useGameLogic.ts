@@ -388,6 +388,9 @@ export const useGameLogic = ({
               // Mark HydroTron as collected
               newHydroTrons[j].collected = true;
               
+              // Increment the hydroTronsCollected counter
+              newPlayers[i].hydroTronsCollected += 1;
+              
               // Decrease neutron bombs by 2 when collecting a HydroTron
               newPlayers[i].neutronBombs = Math.max(0, newPlayers[i].neutronBombs - 2);
               

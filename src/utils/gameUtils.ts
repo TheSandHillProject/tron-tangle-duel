@@ -1,4 +1,3 @@
-
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -35,15 +34,16 @@ export type Player = {
   trail: Position[];
   isAlive: boolean;
   bullets: number;
-  neutronBombs: number; // Property for Neutron Bombs
+  neutronBombs: number;
+  hydroTronsCollected: number;
 };
 
 export type GameState = {
   players: Player[];
   tokens: Token[];
   bullets: Bullet[];
-  purpleBullet: PurpleBullet | null; // Property for the purple bullet
-  hydroTrons: HydroTron[]; // Property for HydroTron tokens
+  purpleBullet: PurpleBullet | null;
+  hydroTrons: HydroTron[];
   gridSize: { width: number; height: number };
   cellSize: number;
   isGameOver: boolean;
@@ -68,7 +68,8 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
-    neutronBombs: 0, // Initialize with 0 Neutron Bombs
+    neutronBombs: 0,
+    hydroTronsCollected: 0,
   };
 
   // In single player mode, only return player 1
@@ -87,7 +88,8 @@ export const initializePlayers = (
     trail: [],
     isAlive: true,
     bullets: 0,
-    neutronBombs: 0, // Initialize with 0 Neutron Bombs
+    neutronBombs: 0,
+    hydroTronsCollected: 0,
   };
 
   return [player1, player2];
@@ -143,8 +145,8 @@ export const initialGameState = (
     players,
     tokens: generateInitialTokens(gridSize, players),
     bullets: [],
-    purpleBullet: null, // Initialize with no purple bullet
-    hydroTrons: [], // Initialize with no HydroTron tokens
+    purpleBullet: null,
+    hydroTrons: [],
     gridSize,
     cellSize,
     isGameOver: false,
@@ -232,7 +234,8 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
   // Preserve scores from previous round
   for (let i = 0; i < Math.min(newPlayers.length, gameState.players.length); i++) {
     newPlayers[i].score = gameState.players[i].score;
-    newPlayers[i].neutronBombs = gameState.players[i].neutronBombs; // Preserve neutron bombs count
+    newPlayers[i].neutronBombs = gameState.players[i].neutronBombs;
+    newPlayers[i].hydroTronsCollected = gameState.players[i].hydroTronsCollected;
   }
   
   return {
@@ -240,8 +243,8 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
     players: newPlayers,
     tokens: generateInitialTokens(gameState.gridSize, newPlayers),
     bullets: [],
-    purpleBullet: null, // Reset purple bullet
-    hydroTrons: [], // Reset HydroTron tokens
+    purpleBullet: null,
+    hydroTrons: [],
     isGameOver: false,
     winner: null,
   };
