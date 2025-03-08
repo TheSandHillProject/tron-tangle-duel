@@ -2,20 +2,38 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Clock, Calendar, Users } from 'lucide-react';
+import { Award, Clock, Calendar, Users, Trophy } from 'lucide-react';
 import { useGameContext } from '@/context/GameContext';
+import { useUserContext } from '@/context/UserContext';
 import BackToHome from '@/components/BackToHome';
-import { useLeaderboardData, useLeaderboardStats, type LeaderboardEntry } from '@/services/leaderboardService';
+import { 
+  useLeaderboardData, 
+  useLeaderboardStats, 
+  useUserRanking,
+  type LeaderboardEntry 
+} from '@/services/leaderboardService';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
   userCount: number;
+  userRanking: { rank: number; score: number } | null;
   type: 'daily' | 'weekly' | 'monthly';
   isLoading: boolean;
+  isUserRankingLoading: boolean;
 }
 
-const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, userCount, type, isLoading }) => {
+const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ 
+  entries, 
+  userCount, 
+  userRanking,
+  type, 
+  isLoading,
+  isUserRankingLoading
+}) => {
+  const { user } = useUserContext();
+
   const getBgColor = () => {
     switch (type) {
       case 'daily': return 'bg-tron-blue/10 border-tron-blue/30';
@@ -37,6 +55,14 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, userCount,
       case 'daily': return 'shadow-[0_0_10px_rgba(12,208,255,0.3)]';
       case 'weekly': return 'shadow-[0_0_10px_rgba(255,153,0,0.3)]';
       case 'monthly': return 'shadow-[0_0_10px_rgba(168,85,247,0.3)]';
+    }
+  };
+
+  const getSeparatorColor = () => {
+    switch (type) {
+      case 'daily': return 'bg-tron-blue/50';
+      case 'weekly': return 'bg-tron-orange/50';
+      case 'monthly': return 'bg-purple-500/50';
     }
   };
 
@@ -73,6 +99,42 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, userCount,
             ))
           )}
         </div>
+
+        {/* Separator with themed color */}
+        <div className="py-2">
+          <Separator className={`${getSeparatorColor()} h-0.5`} />
+        </div>
+
+        {/* User's personal ranking */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-4 py-1">
+            <span className={`text-sm font-medium ${getTextColor()}`}>
+              <Trophy size={14} className="inline mr-1" />
+              Your Ranking
+            </span>
+          </div>
+
+          {isUserRankingLoading || !user ? (
+            <div className="grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/20">
+              <Skeleton className="h-6 w-8" />
+              <Skeleton className="h-6 w-32 col-span-2" />
+              <Skeleton className="h-6 w-20 ml-auto" />
+            </div>
+          ) : userRanking ? (
+            <div className={`grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/30 ${getShadowColor()} border-t border-b border-${type === 'daily' ? 'tron-blue' : type === 'weekly' ? 'tron-orange' : 'purple-500'}/30`}>
+              <div className="flex items-center text-left">
+                <span className={`font-bold ${getTextColor()}`}>#{userRanking.rank}</span>
+              </div>
+              <div className="col-span-2 text-left font-medium">You</div>
+              <div className={`text-right font-mono font-bold ${getTextColor()}`}>{userRanking.score.toLocaleString()}</div>
+            </div>
+          ) : (
+            <div className="text-center py-3 text-sm text-tron-text/70">
+              Play a game to see your ranking!
+            </div>
+          )}
+        </div>
+        
         <div className={`mt-4 flex justify-center items-center gap-2 text-sm font-medium ${getTextColor()}`}>
           <Users size={14} />
           {isLoading ? (
@@ -89,6 +151,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, userCount,
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState("daily");
   const { lastGameMode } = useGameContext();
+  const { user } = useUserContext();
   
   // Fetch leaderboard data
   const dailyData = useLeaderboardData('daily');
@@ -99,6 +162,11 @@ const Leaderboard = () => {
   const dailyStats = useLeaderboardStats('daily');
   const weeklyStats = useLeaderboardStats('weekly');
   const monthlyStats = useLeaderboardStats('monthly');
+  
+  // Fetch user rankings
+  const dailyUserRanking = useUserRanking(user?.id, 'daily');
+  const weeklyUserRanking = useUserRanking(user?.id, 'weekly');
+  const monthlyUserRanking = useUserRanking(user?.id, 'monthly');
   
   const singlePlayerRoute = lastGameMode === 'single' ? "/game/single" : "/game/single";
   const twoPlayerRoute = lastGameMode === 'two' ? "/game/two" : "/game/two";
@@ -162,24 +230,30 @@ const Leaderboard = () => {
               <LeaderboardTable 
                 entries={dailyData.data || []} 
                 userCount={dailyStats.data?.uniqueUsers || 0} 
+                userRanking={dailyUserRanking.data || null}
                 type="daily" 
                 isLoading={dailyData.isLoading || dailyStats.isLoading}
+                isUserRankingLoading={dailyUserRanking.isLoading}
               />
             </TabsContent>
             <TabsContent value="weekly">
               <LeaderboardTable 
                 entries={weeklyData.data || []} 
                 userCount={weeklyStats.data?.uniqueUsers || 0} 
+                userRanking={weeklyUserRanking.data || null}
                 type="weekly" 
                 isLoading={weeklyData.isLoading || weeklyStats.isLoading}
+                isUserRankingLoading={weeklyUserRanking.isLoading}
               />
             </TabsContent>
             <TabsContent value="monthly">
               <LeaderboardTable 
                 entries={monthlyData.data || []} 
                 userCount={monthlyStats.data?.uniqueUsers || 0} 
+                userRanking={monthlyUserRanking.data || null}
                 type="monthly" 
                 isLoading={monthlyData.isLoading || monthlyStats.isLoading}
+                isUserRankingLoading={monthlyUserRanking.isLoading}
               />
             </TabsContent>
           </Tabs>

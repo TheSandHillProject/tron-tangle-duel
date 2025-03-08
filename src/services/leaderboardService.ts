@@ -13,6 +13,12 @@ export interface LeaderboardStats {
   uniqueUsers: number;
 }
 
+export interface UserRanking {
+  rank: number;
+  score: number;
+  timestamp: string;
+}
+
 // These would be real API calls in production
 const mockFetchLeaderboard = async (period: 'daily' | 'weekly' | 'monthly'): Promise<LeaderboardEntry[]> => {
   // Simulate API delay
@@ -53,6 +59,26 @@ const mockGetLeaderboardStats = async (period: 'daily' | 'weekly' | 'monthly'): 
   };
 };
 
+const mockGetUserRanking = async (userId: string, period: 'daily' | 'weekly' | 'monthly'): Promise<UserRanking> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 600));
+  
+  // Generate a random ranking for the user based on the period
+  // In a real implementation, this would fetch the user's actual ranking from your backend
+  const totalUsers = period === 'daily' ? 1042 : period === 'weekly' ? 12891 : 37203;
+  const randomRank = Math.floor(Math.random() * (totalUsers - 6)) + 6; // Ensure rank is after top 5
+  
+  // Scale scores based on time period like in the leaderboard
+  const baseScore = Math.floor(Math.random() * 30) + 10; // Random score between 10 and 39
+  const multiplier = period === 'daily' ? 1 : period === 'weekly' ? 3 : 8;
+  
+  return {
+    rank: randomRank,
+    score: baseScore * multiplier,
+    timestamp: new Date().toISOString()
+  };
+};
+
 export const submitScore = async (userId: string, username: string, score: number): Promise<void> => {
   // In a real implementation, this would send the score to your backend
   console.log(`Submitting score for ${username} (${userId}): ${score}`);
@@ -73,5 +99,14 @@ export const useLeaderboardStats = (period: 'daily' | 'weekly' | 'monthly') => {
     queryKey: ['leaderboardStats', period],
     queryFn: () => mockGetLeaderboardStats(period),
     staleTime: 60 * 1000, // 1 minute
+  });
+};
+
+export const useUserRanking = (userId: string | undefined, period: 'daily' | 'weekly' | 'monthly') => {
+  return useQuery({
+    queryKey: ['userRanking', userId, period],
+    queryFn: () => userId ? mockGetUserRanking(userId, period) : Promise.resolve(null),
+    staleTime: 60 * 1000, // 1 minute
+    enabled: !!userId, // Only run query if userId exists
   });
 };
