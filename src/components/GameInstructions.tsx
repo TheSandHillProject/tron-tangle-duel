@@ -25,7 +25,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
             <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
             <p>Use bullets to cut your trail and create shortcuts.</p>
             <p className="text-purple-500 font-medium mt-1">With 10 bullets, a purple NeuTron Bomb token appears!</p>
-            <p>Collect it and use the 2 key to clear all walls and add an extra bullet on the map.</p>
+            <p>You can either Deploy the NeuTron and Clear the board, or collect 2 and convert them into a green HydroTron Bomb.</p>
           </div>
         </div>
       ) : (
