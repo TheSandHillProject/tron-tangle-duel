@@ -1,15 +1,37 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGameContext } from '@/context/GameContext';
+import { useUserContext } from '@/context/UserContext';
+import LoginPrompt from '@/components/LoginPrompt';
 
 const Index = () => {
   const { setNavigatingFrom, setSkipSetup } = useGameContext();
+  const { user, isLoading } = useUserContext();
+  const [showLogin, setShowLogin] = useState(false);
   
   const handleNavigate = () => {
     setNavigatingFrom('/');
     setSkipSetup(false); // Always show setup when coming from homepage
   };
+  
+  // Show login screen if not logged in and button clicked
+  const handleGameButtonClick = () => {
+    if (!user && !showLogin) {
+      setShowLogin(true);
+      return false; // Prevent navigation
+    }
+    handleNavigate();
+    return true; // Allow navigation
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-tron-background">
+        <div className="text-tron-blue animate-pulse">Loading...</div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-tron-background py-8 px-4">
@@ -18,33 +40,45 @@ const Index = () => {
           BATTLE TRON
         </h1>
         
-        <div className="flex flex-col sm:flex-row gap-6 mt-8">
-          <Link 
-            to="/game/single" 
-            className="px-10 py-5 rounded-lg border-2 border-tron-blue text-tron-blue hover:bg-tron-blue/20 
-            shadow-neon-blue transition-all duration-300 font-medium font-space text-xl"
-            onClick={handleNavigate}
-          >
-            SINGLE PLAYER
-          </Link>
-          
-          <Link 
-            to="/game/two" 
-            className="px-10 py-5 rounded-lg border-2 border-tron-orange text-tron-orange hover:bg-tron-orange/20
-            shadow-neon-orange transition-all duration-300 font-medium font-space text-xl"
-            onClick={handleNavigate}
-          >
-            TWO PLAYERS
-          </Link>
-          
-          <Link 
-            to="/leaderboard" 
-            className="px-10 py-5 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
-            shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space text-xl"
-          >
-            LEADERBOARD
-          </Link>
-        </div>
+        {showLogin && !user ? (
+          <LoginPrompt onComplete={() => setShowLogin(false)} />
+        ) : (
+          <>
+            {user && (
+              <div className="mb-8 bg-tron-blue/10 px-4 py-2 rounded-lg text-tron-blue">
+                Welcome, <span className="font-medium">{user.username}</span>!
+              </div>
+            )}
+            
+            <div className="flex flex-col sm:flex-row gap-6 mt-8">
+              <Link 
+                to="/game/single" 
+                className="px-10 py-5 rounded-lg border-2 border-tron-blue text-tron-blue hover:bg-tron-blue/20 
+                shadow-neon-blue transition-all duration-300 font-medium font-space text-xl"
+                onClick={(e) => !handleGameButtonClick() && e.preventDefault()}
+              >
+                SINGLE PLAYER
+              </Link>
+              
+              <Link 
+                to="/game/two" 
+                className="px-10 py-5 rounded-lg border-2 border-tron-orange text-tron-orange hover:bg-tron-orange/20
+                shadow-neon-orange transition-all duration-300 font-medium font-space text-xl"
+                onClick={(e) => !handleGameButtonClick() && e.preventDefault()}
+              >
+                TWO PLAYERS
+              </Link>
+              
+              <Link 
+                to="/leaderboard" 
+                className="px-10 py-5 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
+                shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space text-xl"
+              >
+                LEADERBOARD
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Game instructions */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">

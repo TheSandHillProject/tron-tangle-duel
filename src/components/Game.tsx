@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import GameModeSelector from './GameModeSelector';
@@ -10,6 +10,10 @@ import GameOverlay from './GameOverlay';
 import GameInstructions from './GameInstructions';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useGameContext } from '@/context/GameContext';
+import { useUserContext } from '@/context/UserContext';
+import { submitScore } from '@/services/leaderboardService';
+import LoginPrompt from './LoginPrompt';
+import { toast } from '@/components/ui/use-toast';
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -21,12 +25,26 @@ const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
   const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom } = useGameContext();
+  const { user, isLoading: isUserLoading } = useUserContext();
+  const navigate = useNavigate();
+  
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
   const [framesPerSecond, setFramesPerSecond] = useState<number>(2);
   const [isSetup, setIsSetup] = useState<boolean>(true);
+  const [needsLogin, setNeedsLogin] = useState<boolean>(false);
+  const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    if (!isUserLoading && !user) {
+      setNeedsLogin(true);
+    } else {
+      setNeedsLogin(false);
+    }
+  }, [user, isUserLoading]);
 
   useEffect(() => {
     // Determine if we should show setup based on navigation source
@@ -93,6 +111,61 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     framesPerSecond,
     isSetup
   });
+
+  // Submit score to backend when game ends
+  useEffect(() => {
+    if (
+      gameState.isGameOver && 
+      user && 
+      gameMode === 'single' && 
+      bulletsCollected > 0 &&
+      lastSubmittedScore !== bulletsCollected * speedMultiplier
+    ) {
+      const finalScore = bulletsCollected * speedMultiplier;
+      
+      // Submit score to backend
+      submitScore(user.id, user.username, finalScore)
+        .then(() => {
+          toast({
+            title: "Score Submitted",
+            description: `Your score of ${finalScore} has been recorded!`,
+            duration: 3000
+          });
+          setLastSubmittedScore(finalScore);
+        })
+        .catch(error => {
+          console.error("Failed to submit score:", error);
+          toast({
+            title: "Score Submission Failed",
+            description: "There was an error recording your score.",
+            variant: "destructive",
+            duration: 3000
+          });
+        });
+    }
+  }, [gameState.isGameOver, user, gameMode, bulletsCollected, speedMultiplier, lastSubmittedScore]);
+
+  // User needs to log in first
+  if (needsLogin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4">
+        <div className="w-full max-w-4xl">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space text-center mb-8">
+            BATTLE TRON
+          </h1>
+          <LoginPrompt onComplete={() => setNeedsLogin(false)} />
+          <div className="mt-8 text-center">
+            <Link 
+              to="/"
+              className="text-gray-400/80 hover:text-gray-300 transition-colors font-medium"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isSetup) {
     return (

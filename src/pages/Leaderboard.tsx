@@ -1,49 +1,21 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Clock, Calendar } from 'lucide-react';
+import { Award, Clock, Calendar, Users } from 'lucide-react';
 import { useGameContext } from '@/context/GameContext';
 import BackToHome from '@/components/BackToHome';
+import { useLeaderboardData, useLeaderboardStats, type LeaderboardEntry } from '@/services/leaderboardService';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface LeaderboardEntry {
-  id: number;
-  username: string;
-  score: number;
-  rank: number;
-}
-
-interface LeaderboardProps {
+interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
   userCount: number;
   type: 'daily' | 'weekly' | 'monthly';
+  isLoading: boolean;
 }
 
-const mockDailyData: LeaderboardEntry[] = [
-  { id: 1, username: "TronMaster", score: 5200, rank: 1 },
-  { id: 2, username: "LightCycle", score: 4800, rank: 2 },
-  { id: 3, username: "GridRunner", score: 4500, rank: 3 },
-  { id: 4, username: "DiscUser", score: 4100, rank: 4 },
-  { id: 5, username: "ByteRider", score: 3900, rank: 5 },
-];
-
-const mockWeeklyData: LeaderboardEntry[] = [
-  { id: 6, username: "NeonRider", score: 12500, rank: 1 },
-  { id: 7, username: "CyberHunter", score: 11200, rank: 2 },
-  { id: 1, username: "TronMaster", score: 10800, rank: 3 },
-  { id: 8, username: "DataStream", score: 9500, rank: 4 },
-  { id: 9, username: "ProgramUser", score: 8700, rank: 5 },
-];
-
-const mockMonthlyData: LeaderboardEntry[] = [
-  { id: 6, username: "NeonRider", score: 42000, rank: 1 },
-  { id: 10, username: "VirtualHero", score: 38500, rank: 2 },
-  { id: 11, username: "CodeWarrior", score: 36200, rank: 3 },
-  { id: 1, username: "TronMaster", score: 35000, rank: 4 },
-  { id: 12, username: "GridMaster", score: 33500, rank: 5 },
-];
-
-const LeaderboardTable: React.FC<LeaderboardProps> = ({ entries, userCount, type }) => {
+const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, userCount, type, isLoading }) => {
   const getBgColor = () => {
     switch (type) {
       case 'daily': return 'bg-tron-blue/10 border-tron-blue/30';
@@ -77,21 +49,37 @@ const LeaderboardTable: React.FC<LeaderboardProps> = ({ entries, userCount, type
           <div className="text-right">Score</div>
         </div>
         <div className="space-y-2">
-          {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className={`grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/20 hover:bg-black/40 transition-colors`}
-            >
-              <div className="flex items-center text-left">
-                <span className={`font-bold ${getTextColor()}`}>#{entry.rank}</span>
+          {isLoading ? (
+            // Loading skeleton
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/20">
+                <Skeleton className="h-6 w-8" />
+                <Skeleton className="h-6 w-32 col-span-2" />
+                <Skeleton className="h-6 w-20 ml-auto" />
               </div>
-              <div className="col-span-2 text-left font-medium">{entry.username}</div>
-              <div className={`text-right font-mono font-bold ${getTextColor()}`}>{entry.score.toLocaleString()}</div>
-            </div>
-          ))}
+            ))
+          ) : (
+            entries.map((entry) => (
+              <div
+                key={entry.id}
+                className={`grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/20 hover:bg-black/40 transition-colors`}
+              >
+                <div className="flex items-center text-left">
+                  <span className={`font-bold ${getTextColor()}`}>#{entry.rank}</span>
+                </div>
+                <div className="col-span-2 text-left font-medium">{entry.username}</div>
+                <div className={`text-right font-mono font-bold ${getTextColor()}`}>{entry.score.toLocaleString()}</div>
+              </div>
+            ))
+          )}
         </div>
-        <div className={`mt-4 text-center text-sm font-medium ${getTextColor()}`}>
-          {userCount} unique {type} players
+        <div className={`mt-4 flex justify-center items-center gap-2 text-sm font-medium ${getTextColor()}`}>
+          <Users size={14} />
+          {isLoading ? (
+            <Skeleton className="h-5 w-16" />
+          ) : (
+            <span>{userCount.toLocaleString()} unique {type} players</span>
+          )}
         </div>
       </div>
     </div>
@@ -101,6 +89,16 @@ const LeaderboardTable: React.FC<LeaderboardProps> = ({ entries, userCount, type
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState("daily");
   const { lastGameMode } = useGameContext();
+  
+  // Fetch leaderboard data
+  const dailyData = useLeaderboardData('daily');
+  const weeklyData = useLeaderboardData('weekly');
+  const monthlyData = useLeaderboardData('monthly');
+  
+  // Fetch leaderboard stats
+  const dailyStats = useLeaderboardStats('daily');
+  const weeklyStats = useLeaderboardStats('weekly');
+  const monthlyStats = useLeaderboardStats('monthly');
   
   const singlePlayerRoute = lastGameMode === 'single' ? "/game/single" : "/game/single";
   const twoPlayerRoute = lastGameMode === 'two' ? "/game/two" : "/game/two";
@@ -162,23 +160,26 @@ const Leaderboard = () => {
             </TabsList>
             <TabsContent value="daily">
               <LeaderboardTable 
-                entries={mockDailyData} 
-                userCount={42} 
+                entries={dailyData.data || []} 
+                userCount={dailyStats.data?.uniqueUsers || 0} 
                 type="daily" 
+                isLoading={dailyData.isLoading || dailyStats.isLoading}
               />
             </TabsContent>
             <TabsContent value="weekly">
               <LeaderboardTable 
-                entries={mockWeeklyData} 
-                userCount={156} 
+                entries={weeklyData.data || []} 
+                userCount={weeklyStats.data?.uniqueUsers || 0} 
                 type="weekly" 
+                isLoading={weeklyData.isLoading || weeklyStats.isLoading}
               />
             </TabsContent>
             <TabsContent value="monthly">
               <LeaderboardTable 
-                entries={mockMonthlyData} 
-                userCount={372} 
+                entries={monthlyData.data || []} 
+                userCount={monthlyStats.data?.uniqueUsers || 0} 
                 type="monthly" 
+                isLoading={monthlyData.isLoading || monthlyStats.isLoading}
               />
             </TabsContent>
           </Tabs>
