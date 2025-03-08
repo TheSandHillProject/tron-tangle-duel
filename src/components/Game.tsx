@@ -18,46 +18,32 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
-  // Game mode state (single or two player)
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
-  
-  // Speed multiplier (1x, 2x, 3x, 4x)
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
-  
-  // Grid configuration
   const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
-  const [framesPerSecond, setFramesPerSecond] = useState<number>(2); // Default is 2 FPS
-  
-  // Setup state - true when configuring game, false when playing
+  const [framesPerSecond, setFramesPerSecond] = useState<number>(2);
   const [isSetup, setIsSetup] = useState<boolean>(true);
-  
-  // Effect to reset game mode when initialGameMode changes
+
   useEffect(() => {
     setGameMode(initialGameMode);
   }, [initialGameMode]);
-  
-  // Handle game mode change
+
   const handleGameModeChange = (mode: 'single' | 'two') => {
     setGameMode(mode);
     
-    // Call the parent component's handler if provided
     if (onGameModeChange) {
       onGameModeChange(mode);
     }
   };
-  
-  // Apply game configuration and start the game
+
   const applyGameSetup = (width: number, height: number, fps: number) => {
     setGridWidth(width);
     setGridHeight(height);
     setFramesPerSecond(fps);
-    
-    // Exit setup mode
     setIsSetup(false);
   };
-  
-  // Get game logic
+
   const {
     gameState,
     canvasWidth,
@@ -76,8 +62,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     framesPerSecond,
     isSetup
   });
-  
-  // If in setup mode, show the setup screen
+
   if (isSetup) {
     return (
       <div className="flex flex-col items-center">
@@ -95,10 +80,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           
           <Link 
             to="/leaderboard" 
-            className="ml-4 px-6 py-2 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
-            shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space"
+            className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all ml-2"
           >
-            LEADERBOARD
+            Leaderboard
           </Link>
         </div>
         
@@ -111,10 +95,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       </div>
     );
   }
-  
+
   return (
     <div className="flex flex-col items-center">
-      {/* Game title and round */}
       <div className="mb-2 text-center animate-game-fade-in">
         <div className="text-xs font-medium text-tron-text/60 tracking-widest uppercase mb-1">
           Round {gameState.round}
@@ -124,7 +107,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         </h1>
       </div>
       
-      {/* Game mode selector with leaderboard button */}
       <div className="flex items-center mb-4">
         <GameModeSelector 
           gameMode={gameMode} 
@@ -133,14 +115,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         
         <Link 
           to="/leaderboard" 
-          className="ml-4 px-6 py-2 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
-          shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space"
+          className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all ml-2"
         >
-          LEADERBOARD
+          Leaderboard
         </Link>
       </div>
       
-      {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
         <div className="flex flex-col items-center">
           {gameMode === 'single' ? (
@@ -199,7 +179,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         )}
       </div>
       
-      {/* Game canvas and overlay */}
       <div className="relative">
         <GameOverlay
           gameState={gameState}
@@ -210,7 +189,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           onResumeGame={handleResumeGame}
         />
         
-        {/* Game canvas */}
         <div className="glass-panel rounded-xl p-2 overflow-hidden animate-game-fade-in">
           <GameCanvas 
             gameState={gameState}
@@ -220,7 +198,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         </div>
       </div>
       
-      {/* Game controls */}
       <GameControls 
         isGameOver={gameState.isGameOver}
         isGamePaused={gameState.isGamePaused}
@@ -237,7 +214,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         onDeployNeutronBomb={handleDeployNeutronBomb}
       />
       
-      {/* Game instructions */}
       <GameInstructions gameMode={gameMode} />
     </div>
   );
