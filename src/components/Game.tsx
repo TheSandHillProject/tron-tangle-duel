@@ -78,12 +78,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             onGameModeChange={handleGameModeChange} 
           />
           
-          <Link 
-            to="/leaderboard" 
-            className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all ml-2"
+          <button 
+            onClick={() => window.location.href = '/leaderboard'}
+            className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
           >
-            Leaderboard
-          </Link>
+            Single Player
+          </button>
         </div>
         
         <GameSetup 
@@ -113,12 +113,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           onGameModeChange={handleGameModeChange} 
         />
         
-        <Link 
-          to="/leaderboard" 
-          className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all ml-2"
+        <button 
+          onClick={() => window.location.href = '/leaderboard'}
+          className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
         >
           Leaderboard
-        </Link>
+        </button>
       </div>
       
       <div className="flex justify-center items-center gap-12 mb-4">

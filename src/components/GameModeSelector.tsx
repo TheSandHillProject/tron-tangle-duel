@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface GameModeSelectorProps {
   gameMode: 'single' | 'two';
@@ -8,7 +9,7 @@ interface GameModeSelectorProps {
 
 const GameModeSelector: React.FC<GameModeSelectorProps> = ({ gameMode, onGameModeChange }) => {
   return (
-    <div className="mb-4 flex items-center gap-2 animate-game-fade-in">
+    <div className="flex items-center gap-2 animate-game-fade-in">
       <button 
         onClick={() => onGameModeChange('single')}
         className={`px-3 py-1.5 rounded-lg transition-all ${
@@ -30,6 +31,13 @@ const GameModeSelector: React.FC<GameModeSelectorProps> = ({ gameMode, onGameMod
       >
         Two Players
       </button>
+      
+      <Link 
+        to="/leaderboard" 
+        className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
+      >
+        Leaderboard
+      </Link>
     </div>
   );
 };
