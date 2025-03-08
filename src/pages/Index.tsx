@@ -1,13 +1,14 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGameContext } from '@/context/GameContext';
 import { useUserContext } from '@/context/UserContext';
 import LoginPrompt from '@/components/LoginPrompt';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const Index = () => {
   const { setNavigatingFrom, setSkipSetup } = useGameContext();
-  const { user, isLoading } = useUserContext();
+  const { user, isLoading, logout } = useUserContext();
   const [showLogin, setShowLogin] = useState(false);
   
   const handleNavigate = () => {
@@ -23,6 +24,11 @@ const Index = () => {
     }
     handleNavigate();
     return true; // Allow navigation
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowLogin(false);
   };
   
   if (isLoading) {
@@ -45,8 +51,16 @@ const Index = () => {
         ) : (
           <>
             {user && (
-              <div className="mb-8 bg-tron-blue/10 px-4 py-2 rounded-lg text-tron-blue">
-                Welcome, <span className="font-medium">{user.username}</span>!
+              <div className="mb-8 bg-tron-blue/10 px-4 py-2 rounded-lg text-tron-blue flex items-center justify-between w-full max-w-md">
+                <span>Welcome, <span className="font-medium">{user.username}</span>!</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-tron-blue hover:bg-tron-blue/20"
+                >
+                  <LogOut size={16} className="mr-1" /> Sign Out
+                </Button>
               </div>
             )}
             
