@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -77,13 +78,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             gameMode={gameMode} 
             onGameModeChange={handleGameModeChange} 
           />
-          
-          <button 
-            onClick={() => window.location.href = '/leaderboard'}
-            className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
-          >
-            Single Player
-          </button>
         </div>
         
         <GameSetup 
@@ -112,13 +106,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           gameMode={gameMode} 
           onGameModeChange={handleGameModeChange} 
         />
-        
-        <button 
-          onClick={() => window.location.href = '/leaderboard'}
-          className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500/80 hover:bg-purple-500/20 transition-all"
-        >
-          Leaderboard
-        </button>
       </div>
       
       <div className="flex justify-center items-center gap-12 mb-4">
