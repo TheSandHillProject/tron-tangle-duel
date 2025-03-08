@@ -1,3 +1,4 @@
+
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -34,7 +35,7 @@ export type Player = {
   trail: Position[];
   isAlive: boolean;
   bullets: number;
-  neutronBombs: number; // New property for Neutron Bombs
+  neutronBombs: number; // Property for Neutron Bombs
 };
 
 export type GameState = {
@@ -42,7 +43,7 @@ export type GameState = {
   tokens: Token[];
   bullets: Bullet[];
   purpleBullet: PurpleBullet | null; // Property for the purple bullet
-  hydroTrons: HydroTron[]; // New property for HydroTron tokens
+  hydroTrons: HydroTron[]; // Property for HydroTron tokens
   gridSize: { width: number; height: number };
   cellSize: number;
   isGameOver: boolean;

@@ -489,6 +489,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
               // Mark HydroTron as collected
               newHydroTrons[j].collected = true;
               
+              // Decrease neutron bombs by 2 when collecting a HydroTron
+              newPlayers[i].neutronBombs = Math.max(0, newPlayers[i].neutronBombs - 2);
+              
               // Show toast notification
               toast({
                 title: "HydroTron Collected!",
@@ -1148,3 +1151,4 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'two', onGameModeChange }
 };
 
 export default Game;
+
