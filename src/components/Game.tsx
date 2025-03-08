@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
 import GameModeSelector from './GameModeSelector';
@@ -87,10 +87,20 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           </h1>
         </div>
         
-        <GameModeSelector 
-          gameMode={gameMode} 
-          onGameModeChange={handleGameModeChange} 
-        />
+        <div className="flex items-center mb-4">
+          <GameModeSelector 
+            gameMode={gameMode} 
+            onGameModeChange={handleGameModeChange} 
+          />
+          
+          <Link 
+            to="/leaderboard" 
+            className="ml-4 px-6 py-2 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
+            shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space"
+          >
+            LEADERBOARD
+          </Link>
+        </div>
         
         <GameSetup 
           onSetupComplete={applyGameSetup}
@@ -114,11 +124,21 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         </h1>
       </div>
       
-      {/* Game mode selector - always show it */}
-      <GameModeSelector 
-        gameMode={gameMode} 
-        onGameModeChange={handleGameModeChange} 
-      />
+      {/* Game mode selector with leaderboard button */}
+      <div className="flex items-center mb-4">
+        <GameModeSelector 
+          gameMode={gameMode} 
+          onGameModeChange={handleGameModeChange} 
+        />
+        
+        <Link 
+          to="/leaderboard" 
+          className="ml-4 px-6 py-2 rounded-lg border-2 border-purple-500 text-purple-500 hover:bg-purple-500/20
+          shadow-[0_0_5px_theme('colors.purple.500'),_0_0_10px_theme('colors.purple.500')] transition-all duration-300 font-medium font-space"
+        >
+          LEADERBOARD
+        </Link>
+      </div>
       
       {/* Player scores, bullet counts, and timer */}
       <div className="flex justify-center items-center gap-12 mb-4">
