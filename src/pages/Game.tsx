@@ -42,7 +42,7 @@ const GamePage = () => {
       
       <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
         <p className="text-center">
-          &copy; 202 Fermi Strategies, Inc. All Rights Reserved.
+          &copy; 2025 Fermi Strategies, Inc. All Rights Reserved.
         </p>
       </footer>
     </div>
