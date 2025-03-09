@@ -16,7 +16,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const API_BASE_URL = "https://your-heroku-app.herokuapp.com"; // Change to your actual backend URL
+const API_BASE_URL = "https://battletron-backend-199102ffa310.herokuapp.com";
 
 // Function to fetch the auth token from localStorage
 const getAuthHeaders = () => {
