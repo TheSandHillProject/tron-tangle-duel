@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -24,7 +23,7 @@ const GameSetup: React.FC<GameSetupProps> = ({
   const minGridSize = 20;
   const maxGridSize = 80;
   const minFps = 2;
-  const maxFps = 15;
+  const maxFps = 20;
   
   const handleStartGame = () => {
     onSetupComplete(gridWidth, gridHeight, fps);
