@@ -60,6 +60,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                       <ul className="list-disc list-inside space-y-1 text-sm text-tron-text/80">
                         <li>1 Key: Fire Bullet</li>
                         <li>2 Key: Deploy NeuTron Bomb</li>
+                        <li>3 Key: Deploy HydroTron Bomb</li>
                         <li>Spacebar: Pause Game</li>
                       </ul>
                     </div>
@@ -102,7 +103,10 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                         <span className="text-purple-400 font-medium">Purple NeuTron</span>: Appears when you have 10+ bullets. Collect to convert bullets into a NeuTron Bomb and clear your trail.
                       </li>
                       <li>
-                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears when you have 1+ NeuTron Bombs. Collect to gain more tokens at the cost of a NeuTron Bomb.
+                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting {3} NeuTron Bombs. Collect to spawn HydroTron Bomb.
+                      </li>
+                      <li>
+                        <span className="text-red-400 font-medium">Red GraviTron</span>: Appears after collecting {3} HydroTrons. Needs {STABILITY_THRESHOLD} bullets to stabilize or it will chase you!
                       </li>
                     </>
                   )}
@@ -117,12 +121,28 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
               </div>
               
               {gameMode === 'single' && (
-                <div>
-                  <h3 className="font-medium text-tron-blue mb-1">NeuTron Bombs</h3>
-                  <p className="text-sm text-tron-text/80">
-                    Deploy a NeuTron Bomb to clear your entire trail and spawn an extra token on the map. Use this when you're boxed in!
-                  </p>
-                </div>
+                <>
+                  <div>
+                    <h3 className="font-medium text-tron-blue mb-1">NeuTron Bombs</h3>
+                    <p className="text-sm text-tron-text/80">
+                      Deploy a NeuTron Bomb to clear your entire trail and spawn an extra token on the map. Use this when you're boxed in!
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium text-tron-blue mb-1">HydroTron Bombs</h3>
+                    <p className="text-sm text-tron-text/80">
+                      Deploy a HydroTron Bomb to spawn 2 extra tokens on the map. Collect HydroTron Bombs to spawn a trinity for the end of the universe...
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium text-tron-blue mb-1">GraviTron</h3>
+                    <p className="text-sm text-tron-text/80">
+                      The GraviTron appears after collecting {3} HydroTrons. It will chase you unless you stabilize it with {STABILITY_THRESHOLD} bullets. Collect it to earn a massive bonus!
+                    </p>
+                  </div>
+                </>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
