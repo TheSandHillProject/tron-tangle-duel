@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -76,7 +75,6 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </div>
         <div className="space-y-2">
           {isLoading ? (
-            // Loading skeleton
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="grid grid-cols-4 items-center px-4 py-3 rounded-lg bg-black/20">
                 <Skeleton className="h-6 w-8" />
@@ -100,12 +98,10 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
           )}
         </div>
 
-        {/* Separator with themed color */}
         <div className="py-2">
           <Separator className={`${getSeparatorColor()} h-0.5`} />
         </div>
 
-        {/* User's personal ranking */}
         <div className="space-y-2">
           <div className="flex items-center justify-between px-4 py-1">
             <span className={`text-sm font-medium ${getTextColor()}`}>
@@ -153,17 +149,14 @@ const Leaderboard = () => {
   const { lastGameMode } = useGameContext();
   const { user } = useUserContext();
   
-  // Fetch leaderboard data
   const dailyData = useLeaderboardData('daily');
   const weeklyData = useLeaderboardData('weekly');
   const monthlyData = useLeaderboardData('monthly');
   
-  // Fetch leaderboard stats
   const dailyStats = useLeaderboardStats('daily');
   const weeklyStats = useLeaderboardStats('weekly');
   const monthlyStats = useLeaderboardStats('monthly');
   
-  // Fetch user rankings
   const dailyUserRanking = useUserRanking(user?.id, 'daily');
   const weeklyUserRanking = useUserRanking(user?.id, 'weekly');
   const monthlyUserRanking = useUserRanking(user?.id, 'monthly');
@@ -262,10 +255,10 @@ const Leaderboard = () => {
         <BackToHome />
 
         <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
-        <p className="text-center">
-          &copy; 2025 Fermi Strategies, Inc. All Rights Reserved.
-        </p>
-      </footer>
+          <p className="text-center">
+            &copy; 2025 Nic Pavao. All Rights Reserved.
+          </p>
+        </footer>
       </div>
     </div>
   );

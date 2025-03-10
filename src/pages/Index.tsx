@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGameContext } from '@/context/GameContext';
@@ -130,7 +131,7 @@ const Index = () => {
       
       <footer className="mt-auto pt-8 pb-4 text-xs text-tron-text/50">
         <p className="text-center">
-          &copy; 2025 Fermi Strategies, Inc. All Rights Reserved.
+          &copy; 2025 Nic Pavao. All Rights Reserved.
         </p>
       </footer>
     </div>
