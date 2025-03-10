@@ -1,3 +1,4 @@
+
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -52,6 +53,7 @@ export type GameState = {
   hydroTrons: HydroTron[];
   gravitron: GraviTron | null;
   gravitronActive: boolean;
+  gravitronDeath: boolean;
   gridSize: { width: number; height: number };
   cellSize: number;
   isGameOver: boolean;
@@ -157,6 +159,7 @@ export const initialGameState = (
     hydroTrons: [],
     gravitron: null,
     gravitronActive: false,
+    gravitronDeath: false,
     gridSize,
     cellSize,
     isGameOver: false,
@@ -257,6 +260,7 @@ export const resetRound = (gameState: GameState, singlePlayerMode: boolean = fal
     hydroTrons: [],
     gravitron: null,
     gravitronActive: false,
+    gravitronDeath: false,
     isGameOver: false,
     winner: null,
   };
