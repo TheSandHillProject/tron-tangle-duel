@@ -1,5 +1,5 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from '@/components/ui/use-toast';
 
 // Base URL for the API
 const API_BASE_URL = 'https://battletron-backend-199102ffa310.herokuapp.com';
@@ -22,30 +22,39 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Real API functions that connect to your backend
 const loginUser = async (email: string, username: string): Promise<{ user: User, token: string }> => {
-  const response = await fetch(`${API_BASE_URL}/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, username }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Login failed');
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, username }),
+      mode: 'cors',
+      credentials: 'same-origin',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Login failed: ${response.status} ${errorText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Transform the response to match our User interface
+    return {
+      user: {
+        id: data.user.id.toString(),
+        email: data.user.email,
+        username: data.user.username,
+        lastSeen: new Date(data.user.lastSeen)
+      },
+      token: data.token
+    };
+  } catch (error) {
+    console.error('Login failed', error);
+    // Re-throw to be caught by the login function
+    throw new Error('Could not connect to the server. Please check your internet connection and try again.');
   }
-  
-  const data = await response.json();
-  
-  // Transform the response to match our User interface
-  return {
-    user: {
-      id: data.user.id.toString(),
-      email: data.user.email,
-      username: data.user.username,
-      lastSeen: new Date(data.user.lastSeen)
-    },
-    token: data.token
-  };
 };
 
 const updateLastSeen = async (): Promise<Date> => {
@@ -55,20 +64,28 @@ const updateLastSeen = async (): Promise<Date> => {
     throw new Error('No authentication token found');
   }
   
-  const response = await fetch(`${API_BASE_URL}/update_last_seen`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+  try {
+    const response = await fetch(`${API_BASE_URL}/update_last_seen`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'same-origin',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to update last seen: ${response.status} ${errorText}`);
     }
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to update last seen timestamp');
+    
+    const data = await response.json();
+    return new Date(data.lastSeen);
+  } catch (error) {
+    console.error('Failed to update last seen timestamp', error);
+    throw error;
   }
-  
-  const data = await response.json();
-  return new Date(data.lastSeen);
 };
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -140,8 +157,24 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Store both user data and token in localStorage
       localStorage.setItem('tron-user', JSON.stringify(newUser));
       localStorage.setItem('tron-token', token);
+      
+      // Show success toast
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${username}!`,
+        duration: 3000
+      });
     } catch (error) {
       console.error('Login failed', error);
+      
+      // Show error toast with specific message
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+        duration: 5000
+      });
+      
       throw error;
     } finally {
       setIsLoading(false);
@@ -152,6 +185,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('tron-user');
     localStorage.removeItem('tron-token');
     setUser(null);
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+      duration: 3000
+    });
   };
 
   return (
