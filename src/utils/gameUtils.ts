@@ -62,7 +62,7 @@ export type GameState = {
 };
 
 // Game constants
-export const STABILITY_THRESHOLD = 4; // Bullets needed to stabilize the GraviTron
+export const STABILITY_THRESHOLD = 5; // Bullets needed to stabilize the GraviTron
 
 // Initialize players
 export const initializePlayers = (
