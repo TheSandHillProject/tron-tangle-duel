@@ -18,7 +18,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs btn-glow bg-tron-blue/20 text-tron-blue border border-tron-blue/50 hover:bg-tron-blue/30"
+            className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
           >
             How to Play
           </Button>
