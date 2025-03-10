@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -58,7 +59,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                       <ul className="list-disc list-inside space-y-1 text-sm text-tron-text/80">
                         <li>1 Key: Fire Bullet</li>
                         <li>2 Key: Deploy NeuTron Bomb</li>
-                        <li>3 Key: Deploy HydroTron Bomb</li>
                         <li>Spacebar: Pause Game</li>
                       </ul>
                     </div>
@@ -127,7 +127,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                   <div>
                     <h3 className="font-medium text-tron-blue mb-1">HydroTron Bombs</h3>
                     <p className="text-sm text-tron-text/80">
-                      Collect as many HydroTron Bombs as you possibly can -- the end of the universe awaits...
+                      Collect as many HydroTron Bombs as you possibly can. The end of the universe awaits...
                     </p>
                   </div>
                 </>
