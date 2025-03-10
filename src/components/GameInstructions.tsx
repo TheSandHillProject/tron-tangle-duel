@@ -105,9 +105,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                       <li>
                         <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting {3} NeuTron Bombs. Collect to spawn HydroTron Bomb.
                       </li>
-                      <li>
-                        <span className="text-red-400 font-medium">Red GraviTron</span>: Appears after collecting {3} HydroTrons. Needs {STABILITY_THRESHOLD} bullets to stabilize or it will chase you!
-                      </li>
                     </>
                   )}
                 </ul>
@@ -133,13 +130,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                     <h3 className="font-medium text-tron-blue mb-1">HydroTron Bombs</h3>
                     <p className="text-sm text-tron-text/80">
                       Deploy a HydroTron Bomb to spawn 2 extra tokens on the map. Collect HydroTron Bombs to spawn a trinity for the end of the universe...
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium text-tron-blue mb-1">GraviTron</h3>
-                    <p className="text-sm text-tron-text/80">
-                      The GraviTron appears after collecting {3} HydroTrons. It will chase you unless you stabilize it with {STABILITY_THRESHOLD} bullets. Collect it to earn a massive bonus!
                     </p>
                   </div>
                 </>
