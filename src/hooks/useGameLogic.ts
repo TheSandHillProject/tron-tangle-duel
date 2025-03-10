@@ -12,7 +12,7 @@ import {
 
 const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
 const HYDROTRON_THRESHOLD = 3; // NeuTrons required to generate a HydroTron
-const GRAVITRON_THRESHOLD = 5; // HydroTrons required to generate a GraviTron
+const GRAVITRON_THRESHOLD = 3; // HydroTrons required to generate a GraviTron
 const BULLET_SPEED = 2; // Bullets move faster than players
 const DEFAULT_CELL_SIZE = 12;
 const GRAVITRON_PROXIMITY_THRESHOLD = 3; // Distance at which GraviTron starts moving
