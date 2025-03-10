@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
+import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginPromptProps {
   onComplete?: () => void;
@@ -14,6 +16,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
   const [screenName, setScreenName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +41,20 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
     setError(null);
     
     try {
-      await login(email.trim(), screenName.trim());
-      if (onComplete) onComplete();
+      const success = await login(email.trim(), screenName.trim());
+      if (success) {
+        if (onComplete) {
+          onComplete();
+        } else {
+          // Navigate to home if no onComplete callback
+          navigate('/');
+        }
+      } else {
+        setError('Failed to connect to the server. Please try again.');
+      }
     } catch (err) {
-      setError('Failed to log in. Please try again.');
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +104,12 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
           className="w-full bg-tron-blue/20 text-tron-blue hover:bg-tron-blue/30 border border-tron-blue/50"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Connecting...' : 'Enter The Grid'}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting...
+            </>
+          ) : 'Enter The Grid'}
         </Button>
         
         <p className="text-xs text-center text-tron-text/60 mt-4">
