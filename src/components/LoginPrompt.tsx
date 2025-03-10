@@ -88,7 +88,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
         
         <Button
           type="submit"
-          className="w-full bg-tron-blue/20 text-tron-blue hover:bg-tron-blue/30 border border-tron-blue/50"
+          className="w-full bg-gradient-to-r from-tron-orange/80 to-tron-orange text-black hover:from-tron-orange hover:to-tron-orange/90 border border-tron-orange/50 shadow-neon-orange transition-all duration-300 hover:shadow-[0_0_10px_theme('colors.tron.orange'),_0_0_15px_theme('colors.tron.orange')] font-medium"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Connecting...' : 'Enter The Grid'}
