@@ -273,6 +273,7 @@ export const useGameLogic = ({
       let tokensCollectedThisUpdate = 0;
       let purpleBulletCollected = false;
       let gravitronActive = prevState.gravitronActive;
+      let gravitronDeath = prevState.gravitronDeath;
       let newGraviTron = gravitron;
       
       // Check if we need to spawn HydroTron tokens (in single player mode only)
@@ -476,38 +477,17 @@ export const useGameLogic = ({
             // Deactivate the GraviTron effect
             gravitronActive = false;
             
+            // Activate gravitron death (heat death of the universe)
+            gravitronDeath = true;
+            
+            // Game over when collecting a GraviTron
+            newPlayers[i].isAlive = false;
+            
             // Reset player's HydroTrons collected counter
             newPlayers[i].hydroTronsCollected = 0;
             
             // Reset player's trail completely when collecting a GraviTron
             newPlayers[i].trail = [];
-            
-            // Add several new tokens to the game
-            const allPositions = [
-              ...newPlayers.map(p => p.position),
-              ...newPlayers.flatMap(p => p.trail),
-              ...newTokens.map(t => t.position),
-              ...newHydroTrons.map(h => h.position)
-            ];
-            
-            if (purpleBullet && !purpleBullet.collected) {
-              allPositions.push(purpleBullet.position);
-            }
-            
-            // Add three bonus tokens
-            for (let t = 0; t < 3; t++) {
-              const newTokenPosition = generateRandomPosition(gridSize, [
-                ...allPositions, 
-                ...newTokens.slice(-t).map(t => t.position)
-              ]);
-              
-              newTokens.push({
-                position: newTokenPosition,
-                collected: false
-              });
-              
-              allPositions.push(newTokenPosition);
-            }
           }
         }
       }
@@ -631,7 +611,10 @@ export const useGameLogic = ({
       let isGameOver = false;
       let winner: number | null = null;
       
-      if (alivePlayers.length === 0) {
+      if (gravitronDeath) {
+        // GraviTron death is a special game over condition
+        isGameOver = true;
+      } else if (alivePlayers.length === 0) {
         // Draw - no players alive (only possible in two-player mode)
         isGameOver = true;
         winner = null;
@@ -659,6 +642,7 @@ export const useGameLogic = ({
         hydroTrons: availableHydroTrons,
         gravitron: newGraviTron,
         gravitronActive,
+        gravitronDeath,
         isGameOver,
         winner
       };
