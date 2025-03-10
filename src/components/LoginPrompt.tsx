@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
-import { Loader2 } from 'lucide-react';
 
 interface LoginPromptProps {
   onComplete?: () => void;
@@ -40,18 +39,9 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
     
     try {
       await login(email.trim(), screenName.trim());
-      if (onComplete) {
-        // Small delay to ensure state is updated before calling onComplete
-        setTimeout(() => {
-          onComplete();
-        }, 100);
-      }
+      if (onComplete) onComplete();
     } catch (err) {
-      let errorMessage = 'Failed to log in. Please try again.';
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
+      setError('Failed to log in. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -93,27 +83,15 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
             maxLength={20}
             disabled={isSubmitting}
           />
+          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
         </div>
-        
-        {error && (
-          <div className="p-3 bg-red-900/30 border border-red-500/50 rounded-md text-red-300 text-sm">
-            {error}
-          </div>
-        )}
         
         <Button
           type="submit"
           className="w-full bg-tron-blue/20 text-tron-blue hover:bg-tron-blue/30 border border-tron-blue/50"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            'Enter The Grid'
-          )}
+          {isSubmitting ? 'Connecting...' : 'Enter The Grid'}
         </Button>
         
         <p className="text-xs text-center text-tron-text/60 mt-4">
