@@ -111,7 +111,9 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
               <div>
                 <h3 className="font-medium text-tron-blue mb-1">Bullets</h3>
                 <p className="text-sm text-tron-text/80">
-                  Use bullets to cut through trails (including your own). This can help you escape tight situations or trap your opponent.
+                  {gameMode === 'single' 
+                    ? "Use bullets to cut through your own trail to help you escape tight situations."
+                    : "Use bullets to cut through trails (including your own). This can help you escape tight situations or trap your opponent."}
                 </p>
               </div>
               
