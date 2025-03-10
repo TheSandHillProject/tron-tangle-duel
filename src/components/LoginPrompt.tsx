@@ -49,7 +49,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
 
   return (
     <div className="glass-panel rounded-xl p-6 max-w-md w-full mx-auto animate-game-fade-in">
-      <h2 className="text-xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-tron-orange to-tron-orange/80 animate-pulse-glow shadow-[0_0_8px_theme('colors.tron.orange')]">
+      <h2 className="text-xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow">
         JOIN THE GRID
       </h2>
       
@@ -88,7 +88,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
         
         <Button
           type="submit"
-          className="w-full bg-gradient-to-r from-tron-blue/80 to-tron-blue text-black hover:from-tron-blue hover:to-tron-blue/90 border border-tron-blue/50 shadow-neon-blue transition-all duration-300 hover:shadow-[0_0_10px_theme('colors.tron.blue'),_0_0_15px_theme('colors.tron.blue')] font-medium"
+          className="w-full bg-tron-blue/20 text-tron-blue hover:bg-tron-blue/30 border border-tron-blue/50"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Connecting...' : 'Enter The Grid'}
