@@ -101,10 +101,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, canvasWidth, canvasH
     hydroTrons.forEach(hydroTron => {
       if (hydroTron.collected) return;
       
-      const hydroTronGreenColor = '#4DFF4D'; // This is the green color used for the ring
+      const hydroTronOrangeColor = '#FF9900'; // Changed to the themed orange color
       
-      ctx.fillStyle = hydroTronGreenColor; // Changed from '#F2FCE2' to match the ring color
-      ctx.shadowColor = hydroTronGreenColor;
+      ctx.fillStyle = hydroTronOrangeColor; // Changed from green to orange
+      ctx.shadowColor = hydroTronOrangeColor;
       ctx.shadowBlur = 15;
       
       // Draw circular HydroTron token
@@ -118,8 +118,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, canvasWidth, canvasH
       );
       ctx.fill();
       
-      // Add a pulsing effect with a green glow
-      ctx.strokeStyle = hydroTronGreenColor;
+      // Add a pulsing effect with an orange glow
+      ctx.strokeStyle = hydroTronOrangeColor;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(
