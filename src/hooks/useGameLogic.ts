@@ -9,6 +9,7 @@ import {
 } from '@/utils/gameUtils';
 
 const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
+const HYDROTRON_THRESHOLD = 3; // Changed from 2 to 3 - NeuTrons required to generate a HydroTron
 const BULLET_SPEED = 2; // Bullets move faster than players
 const DEFAULT_CELL_SIZE = 12;
 
@@ -273,9 +274,9 @@ export const useGameLogic = ({
       let newPurpleBullet = purpleBullet;
       
       // Check if we need to spawn HydroTron tokens (in single player mode only)
-      if (gameMode === 'single' && newPlayers[0].neutronBombs >= 2) {
+      if (gameMode === 'single' && newPlayers[0].neutronBombs >= HYDROTRON_THRESHOLD) {
         // Calculate how many HydroTron tokens should exist
-        const desiredHydroTronCount = Math.floor(newPlayers[0].neutronBombs / 2);
+        const desiredHydroTronCount = Math.floor(newPlayers[0].neutronBombs / HYDROTRON_THRESHOLD);
         
         // If we don't have enough, add more
         if (newHydroTrons.length < desiredHydroTronCount) {
@@ -391,8 +392,8 @@ export const useGameLogic = ({
               // Increment the hydroTronsCollected counter
               newPlayers[i].hydroTronsCollected += 1;
               
-              // Decrease neutron bombs by 2 when collecting a HydroTron
-              newPlayers[i].neutronBombs = Math.max(0, newPlayers[i].neutronBombs - 2);
+              // Decrease neutron bombs by HYDROTRON_THRESHOLD when collecting a HydroTron
+              newPlayers[i].neutronBombs = Math.max(0, newPlayers[i].neutronBombs - HYDROTRON_THRESHOLD);
               
               // Add an extra token to the game
               const allPositions = [
