@@ -101,7 +101,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                         <span className="text-purple-400 font-medium">Purple NeuTron</span>: Appears when you have 10+ bullets. Collect to convert bullets into a NeuTron Bomb and clear your trail.
                       </li>
                       <li>
-                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting 3 NeuTron Bombs. Collect this token to convert your Trinity of NeuTrons into a stash of HydroTrons.
+                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting 3 NeuTron Bombs. Collect this token to convert your <a href="https://en.wikipedia.org/wiki/Trinity_(nuclear_test)" target="_blank" rel="noopener noreferrer" className="text-red-500 font-medium hover:text-red-400 transition-colors" style={{ textShadow: '0 0 8px #ea384c, 0 0 12px #ea384c' }}>Trinity</a> of NeuTrons into a stash of HydroTrons.
                       </li>
                     </>
                   )}
