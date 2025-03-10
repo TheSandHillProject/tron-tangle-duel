@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -16,55 +17,25 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const API_BASE_URL = "https://battletron-backend-199102ffa310.herokuapp.com";
-
-// Function to fetch the auth token from localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Real API function for logging in
-const loginUser = async (email: string, username: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, username }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to log in");
-  }
-
-  const data = await response.json();
-  localStorage.setItem("token", data.token); // Store JWT token
-
+// Mock API functions (these would connect to your backend)
+const mockLoginUser = async (email: string, username: string): Promise<User> => {
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // In a real implementation, this would validate with the backend
+  // and retrieve or create the user
   return {
-    id: data.user.id,
-    email: data.user.email,
-    username: data.user.username,
-    lastSeen: new Date(data.user.lastSeen),
+    id: `user-${Math.floor(Math.random() * 100000)}`,
+    email,
+    username,
+    lastSeen: new Date()
   };
 };
 
-// Real API function for updating lastSeen
-const updateLastSeen = async (): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/update_last_seen`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeaders(),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to update last seen");
-  }
-
-  const data = await response.json();
-  console.log("Updated last seen:", data.lastSeen);
+const mockUpdateLastSeen = async (userId: string): Promise<void> => {
+  // In a real implementation, this would update the lastSeen timestamp on the backend
+  await new Promise(resolve => setTimeout(resolve, 300));
+  console.log(`Updated last seen for user ${userId}`);
 };
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -73,17 +44,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("tron-user");
+    const storedUser = localStorage.getItem('tron-user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser({
           ...parsedUser,
-          lastSeen: new Date(parsedUser.lastSeen),
+          lastSeen: new Date(parsedUser.lastSeen) // Convert string to Date
         });
       } catch (error) {
-        console.error("Failed to parse stored user", error);
-        localStorage.removeItem("tron-user");
+        console.error('Failed to parse stored user', error);
+        localStorage.removeItem('tron-user');
       }
     }
     setIsLoading(false);
@@ -92,43 +63,38 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Update lastSeen periodically when logged in
   useEffect(() => {
     if (!user) return;
-
-    updateLastSeen().catch(console.error);
-
+    
+    // Update lastSeen when user first logs in
+    mockUpdateLastSeen(user.id);
+    
+    // Then update periodically
     const interval = setInterval(() => {
-      updateLastSeen()
-        .then(() => {
-          setUser((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  lastSeen: new Date(),
-                }
-              : null
-          );
-        })
-        .catch(console.error);
+      mockUpdateLastSeen(user.id);
+      // Update local state too
+      setUser(prev => prev ? {
+        ...prev,
+        lastSeen: new Date()
+      } : null);
     }, 5 * 60 * 1000); // Every 5 minutes
-
+    
     return () => clearInterval(interval);
   }, [user]);
 
   const login = async (email: string, username: string) => {
     setIsLoading(true);
     try {
-      const newUser = await loginUser(email, username);
+      const newUser = await mockLoginUser(email, username);
       setUser(newUser);
-      localStorage.setItem("tron-user", JSON.stringify(newUser));
+      localStorage.setItem('tron-user', JSON.stringify(newUser));
     } catch (error) {
-      console.error("Login failed", error);
+      console.error('Login failed', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("tron-user");
-    localStorage.removeItem("token"); // Clear JWT token
+    localStorage.removeItem('tron-user');
     setUser(null);
   };
 
@@ -142,7 +108,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useUserContext = () => {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUserContext must be used within a UserProvider");
+    throw new Error('useUserContext must be used within a UserProvider');
   }
   return context;
 };
