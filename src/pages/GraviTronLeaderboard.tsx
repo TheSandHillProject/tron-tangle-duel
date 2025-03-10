@@ -40,7 +40,7 @@ const GraviTronLeaderboard = () => {
             Back
           </Button>
           
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-300 font-space">
+          <h1 className="text-3xl font-bold text-red-500 font-space" style={{textShadow: '0 0 10px #ff0000, 0 0 20px #ff0000'}}>
             GRAVITRON LEADERBOARD
           </h1>
           
