@@ -1,4 +1,3 @@
-
 // Types for our game
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
@@ -61,6 +60,9 @@ export type GameState = {
   winner: number | null;
   round: number;
 };
+
+// Game constants
+export const STABILITY_THRESHOLD = 4; // Bullets needed to stabilize the GraviTron
 
 // Initialize players
 export const initializePlayers = (
@@ -313,4 +315,10 @@ export const generateGraviTronPosition = (
   occupiedPositions: Position[]
 ): Position => {
   return generateRandomPosition(gridSize, occupiedPositions);
+};
+
+// Calculate distance between two positions
+export const calculateDistance = (pos1: Position, pos2: Position): number => {
+  // Use Manhattan distance (grid-based distance)
+  return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
 };

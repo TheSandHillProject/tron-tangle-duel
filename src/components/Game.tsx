@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -14,6 +13,7 @@ import { useUserContext } from '@/context/UserContext';
 import { submitScore } from '@/services/leaderboardService';
 import LoginPrompt from './LoginPrompt';
 import { toast } from '@/components/ui/use-toast';
+import { STABILITY_THRESHOLD } from '@/utils/gameUtils';
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -38,7 +38,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in
     if (!isUserLoading && !user) {
       setNeedsLogin(true);
     } else {
@@ -47,19 +46,14 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   }, [user, isUserLoading]);
 
   useEffect(() => {
-    // Determine if we should show setup based on navigation source
     if (navigatingFrom === '/') {
-      // Coming from homepage - always show setup
       setIsSetup(true);
     } else if (navigatingFrom === '/leaderboard') {
-      // Coming from leaderboard - skip setup if skipSetup is true
       setIsSetup(!skipSetup);
     } else {
-      // Default behavior
       setIsSetup(!skipSetup);
     }
     
-    // Reset navigation source
     setNavigatingFrom(null);
   }, [skipSetup, navigatingFrom, setNavigatingFrom]);
 
@@ -112,7 +106,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     isSetup
   });
 
-  // Submit score to backend when game ends
   useEffect(() => {
     if (
       gameState.isGameOver && 
@@ -123,7 +116,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     ) {
       const finalScore = bulletsCollected * speedMultiplier;
       
-      // Submit score to backend
       submitScore(user.id, user.username, finalScore)
         .then(() => {
           toast({
@@ -145,7 +137,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     }
   }, [gameState.isGameOver, user, gameMode, bulletsCollected, speedMultiplier, lastSubmittedScore]);
 
-  // User needs to log in first
   if (needsLogin) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4">
@@ -233,8 +224,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             />
           )}
           <div className="flex gap-2 mt-1">
-            <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-              Bullets: {gameState.players[0]?.bullets || 0}
+            <div className={`${gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' ? 
+              (gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') : 
+              'bg-tron-blue/10 text-tron-blue'} px-2 py-1 rounded text-xs`}>
+              Bullets: {gameState.players[0]?.bullets || 0}{gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' && 
+                ` / ${STABILITY_THRESHOLD} ${gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? '(Stable)' : '(Unstable)'}`}
             </div>
             {gameMode === 'single' && (
               <>

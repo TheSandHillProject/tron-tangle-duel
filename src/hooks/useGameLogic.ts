@@ -5,7 +5,8 @@ import {
   checkCollision, arePositionsEqual, resetRound, resetGame,
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
   checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition,
-  generateHydroTronPosition, generateGraviTronPosition
+  generateHydroTronPosition, generateGraviTronPosition, calculateDistance,
+  STABILITY_THRESHOLD
 } from '@/utils/gameUtils';
 
 const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
@@ -13,6 +14,7 @@ const HYDROTRON_THRESHOLD = 1; // Changed from 3 to 1 for testing - NeuTrons req
 const GRAVITRON_THRESHOLD = 1; // Changed from 2 to 1 for testing - HydroTrons required to generate a GraviTron
 const BULLET_SPEED = 2; // Bullets move faster than players
 const DEFAULT_CELL_SIZE = 12;
+const GRAVITRON_PROXIMITY_THRESHOLD = 3; // Distance at which GraviTron starts moving
 
 interface UseGameLogicProps {
   gridWidth: number;
@@ -488,6 +490,29 @@ export const useGameLogic = ({
             
             // Reset player's trail completely when collecting a GraviTron
             newPlayers[i].trail = [];
+          }
+        }
+        
+        // Check if player is close to GraviTron and move it if necessary
+        if (newGraviTron && !newGraviTron.collected && gameMode === 'single') {
+          const distance = calculateDistance(newPlayers[i].position, newGraviTron.position);
+          
+          // If player is close to GraviTron and doesn't have enough bullets to stabilize it
+          if (distance <= GRAVITRON_PROXIMITY_THRESHOLD && newPlayers[i].bullets < STABILITY_THRESHOLD) {
+            // Generate a new position for the GraviTron
+            const allPositions = [
+              ...newPlayers.map(p => p.position),
+              ...newPlayers.flatMap(p => p.trail),
+              ...newTokens.filter(t => !t.collected).map(t => t.position),
+              ...newHydroTrons.filter(h => !h.collected).map(h => h.position)
+            ];
+            
+            if (purpleBullet && !purpleBullet.collected) {
+              allPositions.push(purpleBullet.position);
+            }
+            
+            // Move the GraviTron to a new position
+            newGraviTron.position = generateGraviTronPosition(gridSize, allPositions);
           }
         }
       }
