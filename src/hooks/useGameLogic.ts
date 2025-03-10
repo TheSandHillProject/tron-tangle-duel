@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron, GraviTron,
@@ -10,8 +11,8 @@ import {
 } from '@/utils/gameUtils';
 
 const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
-const HYDROTRON_THRESHOLD = 1; // Changed from 3 to 1 for testing - NeuTrons required to generate a HydroTron
-const GRAVITRON_THRESHOLD = 1; // Changed from 2 to 1 for testing - HydroTrons required to generate a GraviTron
+const HYDROTRON_THRESHOLD = 3; // NeuTrons required to generate a HydroTron
+const GRAVITRON_THRESHOLD = 5; // HydroTrons required to generate a GraviTron
 const BULLET_SPEED = 2; // Bullets move faster than players
 const DEFAULT_CELL_SIZE = 12;
 const GRAVITRON_PROXIMITY_THRESHOLD = 3; // Distance at which GraviTron starts moving
