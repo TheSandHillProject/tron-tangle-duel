@@ -122,7 +122,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                   <div>
                     <h3 className="font-medium text-tron-blue mb-1">NeuTron Bombs</h3>
                     <p className="text-sm text-tron-text/80">
-                      Deploy a NeuTron Bomb to clear your trail and spawn an extra token when you're boxed in!
+                      Deploy a NeuTron Bomb to spawn an extra token and clear your trail when you're boxed in!
                     </p>
                   </div>
                   
