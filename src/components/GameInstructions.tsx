@@ -15,7 +15,11 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
     <div className="mt-4">
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm" className="text-xs">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs btn-glow bg-tron-blue/20 text-tron-blue border border-tron-blue/50 hover:bg-tron-blue/30"
+          >
             How to Play
           </Button>
         </AlertDialogTrigger>
