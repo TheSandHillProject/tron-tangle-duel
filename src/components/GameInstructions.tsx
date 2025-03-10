@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { STABILITY_THRESHOLD } from '@/utils/gameUtils';
 
 interface GameInstructionsProps {
   gameMode: 'single' | 'two';
@@ -103,7 +101,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                         <span className="text-purple-400 font-medium">Purple NeuTron</span>: Appears when you have 10+ bullets. Collect to convert bullets into a NeuTron Bomb and clear your trail.
                       </li>
                       <li>
-                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting {3} NeuTron Bombs. Collect to spawn HydroTron Bomb.
+                        <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears after collecting 3 NeuTron Bombs. Collect this token to convert your Trinity of NeuTrons into a stash of HydroTrons.
                       </li>
                     </>
                   )}
@@ -129,7 +127,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                   <div>
                     <h3 className="font-medium text-tron-blue mb-1">HydroTron Bombs</h3>
                     <p className="text-sm text-tron-text/80">
-                      Deploy a HydroTron Bomb to spawn 2 extra tokens on the map. Collect HydroTron Bombs to spawn a trinity for the end of the universe...
+                      Collect as many HydroTron Bombs as you possibly can -- the end of the universe awaits...
                     </p>
                   </div>
                 </>
