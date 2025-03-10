@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { 
-  Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron,
+  Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron, GraviTron,
   initialGameState, updatePlayerPosition, isOutOfBounds, 
   checkCollision, arePositionsEqual, resetRound, resetGame,
   isValidDirectionChange, generateRandomPosition, updateBulletPosition,
   checkBulletTrailCollision, removeTrailSegment, generatePurpleBulletPosition,
-  generateHydroTronPosition
+  generateHydroTronPosition, generateGraviTronPosition
 } from '@/utils/gameUtils';
 
 const NEUTRON_BOMB_THRESHOLD = 10; // Bullets required to generate a purple bullet
 const HYDROTRON_THRESHOLD = 3; // Changed from 2 to 3 - NeuTrons required to generate a HydroTron
+const GRAVITRON_THRESHOLD = 2; // HydroTrons required to generate a GraviTron
 const BULLET_SPEED = 2; // Bullets move faster than players
 const DEFAULT_CELL_SIZE = 12;
 
@@ -263,7 +264,7 @@ export const useGameLogic = ({
   const updateGame = () => {
     setGameState(prevState => {
       // Clone the current state
-      const { players, gridSize, tokens, bullets, purpleBullet, hydroTrons } = prevState;
+      const { players, gridSize, tokens, bullets, purpleBullet, hydroTrons, gravitron } = prevState;
       const newPlayers = [...players].map(player => ({ ...player }));
       const newTokens = [...tokens];
       const newBullets = [...bullets];
@@ -271,7 +272,8 @@ export const useGameLogic = ({
       const occupiedPositions: Position[] = [];
       let tokensCollectedThisUpdate = 0;
       let purpleBulletCollected = false;
-      let newPurpleBullet = purpleBullet;
+      let gravitronActive = prevState.gravitronActive;
+      let newGraviTron = gravitron;
       
       // Check if we need to spawn HydroTron tokens (in single player mode only)
       if (gameMode === 'single' && newPlayers[0].neutronBombs >= HYDROTRON_THRESHOLD) {
@@ -304,6 +306,33 @@ export const useGameLogic = ({
         }
       }
       
+      // Check if we need to spawn a GraviTron (in single player mode only)
+      if (gameMode === 'single' && 
+          newPlayers[0].hydroTronsCollected >= GRAVITRON_THRESHOLD && 
+          !newGraviTron) {
+        // Generate positions for placing the GraviTron
+        const allPositions = [
+          ...newPlayers.map(p => p.position),
+          ...newPlayers.flatMap(p => p.trail),
+          ...newTokens.filter(t => !t.collected).map(t => t.position),
+          ...newHydroTrons.filter(h => !h.collected).map(h => h.position)
+        ];
+        
+        if (newPurpleBullet && !newPurpleBullet.collected) {
+          allPositions.push(newPurpleBullet.position);
+        }
+        
+        // Place GraviTron
+        newGraviTron = {
+          position: generateGraviTronPosition(gridSize, allPositions),
+          collected: false,
+          active: true
+        };
+        
+        // Activate the GraviTron effect
+        gravitronActive = true;
+      }
+      
       // Check if we need to spawn a purple bullet (in single player mode only)
       if (gameMode === 'single' && 
           newPlayers[0].bullets >= NEUTRON_BOMB_THRESHOLD && 
@@ -322,7 +351,7 @@ export const useGameLogic = ({
         };
       }
       
-      // Check for token collection, purple bullet collection, and HydroTron collection
+      // Check for token collection, purple bullet collection, HydroTron collection, and GraviTron collection
       for (let i = 0; i < newPlayers.length; i++) {
         if (!newPlayers[i].isAlive) continue;
         
@@ -421,6 +450,53 @@ export const useGameLogic = ({
               });
               
               break;
+            }
+          }
+        }
+        
+        // Check if player collected the GraviTron
+        if (newGraviTron && !newGraviTron.collected && 
+            arePositionsEqual(newPlayers[i].position, newGraviTron.position)) {
+          
+          // Only works in single player mode
+          if (gameMode === 'single' && i === 0) {
+            // Mark GraviTron as collected
+            newGraviTron.collected = true;
+            
+            // Deactivate the GraviTron effect
+            gravitronActive = false;
+            
+            // Reset player's HydroTrons collected counter
+            newPlayers[i].hydroTronsCollected = 0;
+            
+            // Reset player's trail completely when collecting a GraviTron
+            newPlayers[i].trail = [];
+            
+            // Add several new tokens to the game
+            const allPositions = [
+              ...newPlayers.map(p => p.position),
+              ...newPlayers.flatMap(p => p.trail),
+              ...newTokens.map(t => t.position),
+              ...newHydroTrons.map(h => h.position)
+            ];
+            
+            if (newPurpleBullet && !newPurpleBullet.collected) {
+              allPositions.push(newPurpleBullet.position);
+            }
+            
+            // Add three bonus tokens
+            for (let t = 0; t < 3; t++) {
+              const newTokenPosition = generateRandomPosition(gridSize, [
+                ...allPositions, 
+                ...newTokens.slice(-t).map(t => t.position)
+              ]);
+              
+              newTokens.push({
+                position: newTokenPosition,
+                collected: false
+              });
+              
+              allPositions.push(newTokenPosition);
             }
           }
         }
@@ -571,6 +647,8 @@ export const useGameLogic = ({
         bullets: activeBullets,
         purpleBullet: purpleBulletCollected ? null : newPurpleBullet,
         hydroTrons: availableHydroTrons,
+        gravitron: newGraviTron,
+        gravitronActive,
         isGameOver,
         winner
       };
