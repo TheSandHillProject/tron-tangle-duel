@@ -100,12 +100,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
                       <li>
                         <span className="text-orange-400 font-medium">Orange HydroTron</span>: Appears when you have 1+ NeuTron Bombs. Collect to gain more tokens at the cost of a NeuTron Bomb.
                       </li>
-                      <li>
-                        <span className="text-red-500 font-medium">Red GraviTron</span>: Appears when you have 1+ HydroTrons. <span className="text-red-400">WARNING!</span> Collecting this causes heat death of the universe!
-                      </li>
-                      <li>
-                        <span className="text-red-500 font-medium">GraviTron Stability</span>: The GraviTron will move away if you get within 3 spaces of it unless you have at least {STABILITY_THRESHOLD} bullets to stabilize it.
-                      </li>
                     </>
                   )}
                 </ul>
