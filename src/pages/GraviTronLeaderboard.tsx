@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import BackToHome from '@/components/BackToHome';
-import { Trophy, Clock, ArrowLeft, Star, User } from 'lucide-react';
+import { Trophy, Clock, ArrowLeft, User } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
 
 // Mock data for gravitron leaderboard
@@ -28,6 +29,7 @@ const mockTimeData = [
 const mockUserRanking = {
   rank: 121,
   count: 1,
+  time: '2:35',
   totalGravitrons: 567
 };
 
@@ -58,7 +60,7 @@ const GraviTronLeaderboard = () => {
         
         <div className="glass-panel bg-red-950/30 border-red-900/50 rounded-xl p-6 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
           <Tabs defaultValue="lifetime" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-red-950/50">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-red-950/50">
               <TabsTrigger value="lifetime" className="data-[state=active]:bg-red-800 data-[state=active]:text-white">
                 <Trophy className="mr-2 h-4 w-4" />
                 Lifetime GraviTrons
@@ -66,10 +68,6 @@ const GraviTronLeaderboard = () => {
               <TabsTrigger value="fastest" className="data-[state=active]:bg-red-800 data-[state=active]:text-white">
                 <Clock className="mr-2 h-4 w-4" />
                 Fastest Collection
-              </TabsTrigger>
-              <TabsTrigger value="your-ranking" className="data-[state=active]:bg-red-800 data-[state=active]:text-white">
-                <Star className="mr-2 h-4 w-4" />
-                Your Ranking
               </TabsTrigger>
             </TabsList>
             
@@ -91,9 +89,38 @@ const GraviTronLeaderboard = () => {
                         <td className="p-4 text-right font-mono text-red-300">{entry.count}</td>
                       </tr>
                     ))}
+                    
+                    {user && (
+                      <>
+                        <tr>
+                          <td colSpan={3} className="p-0">
+                            <Separator className="h-[2px] bg-red-600/70" />
+                          </td>
+                        </tr>
+                        <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
+                          <td className="p-4 font-mono">#{mockUserRanking.rank}</td>
+                          <td className="p-4 font-medium">You</td>
+                          <td className="p-4 text-right font-mono text-red-300">{mockUserRanking.count}</td>
+                        </tr>
+                      </>
+                    )}
                   </tbody>
                 </table>
+                
+                {!user && (
+                  <div className="text-center py-4 text-red-400/80 bg-red-950/20">
+                    <User className="h-6 w-6 mx-auto mb-2 text-red-400/60" />
+                    <p className="text-sm">Sign in to see your ranking</p>
+                  </div>
+                )}
               </div>
+              
+              {user && (
+                <div className="flex justify-center items-center text-sm text-red-400/80 mt-4">
+                  <Trophy className="h-4 w-4 mr-2 text-red-400/60" />
+                  <span>{mockUserRanking.totalGravitrons} total GraviTrons collected</span>
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="fastest" className="mt-0">
@@ -114,32 +141,36 @@ const GraviTronLeaderboard = () => {
                         <td className="p-4 text-right font-mono text-red-300">{entry.time}</td>
                       </tr>
                     ))}
+                    
+                    {user && (
+                      <>
+                        <tr>
+                          <td colSpan={3} className="p-0">
+                            <Separator className="h-[2px] bg-red-600/70" />
+                          </td>
+                        </tr>
+                        <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
+                          <td className="p-4 font-mono">#{mockUserRanking.rank}</td>
+                          <td className="p-4 font-medium">You</td>
+                          <td className="p-4 text-right font-mono text-red-300">{mockUserRanking.time}</td>
+                        </tr>
+                      </>
+                    )}
                   </tbody>
                 </table>
+                
+                {!user && (
+                  <div className="text-center py-4 text-red-400/80 bg-red-950/20">
+                    <User className="h-6 w-6 mx-auto mb-2 text-red-400/60" />
+                    <p className="text-sm">Sign in to see your ranking</p>
+                  </div>
+                )}
               </div>
-            </TabsContent>
-            
-            <TabsContent value="your-ranking" className="mt-0">
-              {user ? (
-                <>
-                  <div className="overflow-hidden rounded-lg border border-red-900/50 mb-4">
-                    <div className="bg-red-950/30 hover:bg-red-950/40 p-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="font-mono text-red-300 mr-8">#{mockUserRanking.rank}</span>
-                        <span className="font-medium">You</span>
-                      </div>
-                      <span className="font-mono text-red-300">{mockUserRanking.count}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-center items-center text-sm text-red-400/80 mt-4">
-                    <Trophy className="h-4 w-4 mr-2 text-red-400/60" />
-                    <span>{mockUserRanking.totalGravitrons} total GraviTrons collected</span>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-6 text-red-400/80">
-                  <User className="h-8 w-8 mx-auto mb-3 text-red-400/60" />
-                  <p>Sign in to see your ranking</p>
+              
+              {user && (
+                <div className="flex justify-center items-center text-sm text-red-400/80 mt-4">
+                  <Trophy className="h-4 w-4 mr-2 text-red-400/60" />
+                  <span>{mockUserRanking.totalGravitrons} total GraviTrons collected</span>
                 </div>
               )}
             </TabsContent>
