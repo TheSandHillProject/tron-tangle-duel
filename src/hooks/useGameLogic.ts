@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Direction, GameState, Position, Player, Token, Bullet, PurpleBullet, HydroTron, GraviTron,
@@ -291,8 +290,8 @@ export const useGameLogic = ({
             ...newHydroTrons.map(h => h.position)
           ];
           
-          if (newPurpleBullet && !newPurpleBullet.collected) {
-            allPositions.push(newPurpleBullet.position);
+          if (purpleBullet && !purpleBullet.collected) {
+            allPositions.push(purpleBullet.position);
           }
           
           // Add new HydroTron tokens until we have the desired count
@@ -319,8 +318,8 @@ export const useGameLogic = ({
           ...newHydroTrons.filter(h => !h.collected).map(h => h.position)
         ];
         
-        if (newPurpleBullet && !newPurpleBullet.collected) {
-          allPositions.push(newPurpleBullet.position);
+        if (purpleBullet && !purpleBullet.collected) {
+          allPositions.push(purpleBullet.position);
         }
         
         // Place GraviTron
@@ -337,7 +336,7 @@ export const useGameLogic = ({
       // Check if we need to spawn a purple bullet (in single player mode only)
       if (gameMode === 'single' && 
           newPlayers[0].bullets >= NEUTRON_BOMB_THRESHOLD && 
-          !newPurpleBullet) {
+          !purpleBullet) {
         // Generate positions for placing the purple bullet
         const allPositions = [
           ...newPlayers.map(p => p.position),
@@ -346,9 +345,20 @@ export const useGameLogic = ({
         ];
         
         // Place purple bullet
-        newPurpleBullet = {
+        const newPurpleBullet: PurpleBullet = {
           position: generatePurpleBulletPosition(gridSize, allPositions),
           collected: false
+        };
+        
+        return {
+          ...prevState,
+          players: newPlayers,
+          tokens: newTokens,
+          bullets: newBullets,
+          purpleBullet: newPurpleBullet,
+          hydroTrons: newHydroTrons,
+          gravitron: newGraviTron,
+          gravitronActive
         };
       }
       
@@ -377,8 +387,8 @@ export const useGameLogic = ({
               ...newTokens.filter(t => !t.collected).map(t => t.position)
             ];
             
-            if (newPurpleBullet && !newPurpleBullet.collected) {
-              allPositions.push(newPurpleBullet.position);
+            if (purpleBullet && !purpleBullet.collected) {
+              allPositions.push(purpleBullet.position);
             }
             
             const newTokenPosition = generateRandomPosition(gridSize, allPositions);
@@ -392,13 +402,12 @@ export const useGameLogic = ({
         }
         
         // Check if player collected the purple bullet
-        if (newPurpleBullet && !newPurpleBullet.collected && 
-            arePositionsEqual(newPlayers[i].position, newPurpleBullet.position)) {
+        if (purpleBullet && !purpleBullet.collected && 
+            arePositionsEqual(newPlayers[i].position, purpleBullet.position)) {
           
           // Only works in single player mode
           if (gameMode === 'single' && i === 0) {
             // Mark purple bullet as collected
-            newPurpleBullet.collected = true;
             purpleBulletCollected = true;
             
             // Decrease player's bullet count and add a neutron bomb
@@ -433,8 +442,8 @@ export const useGameLogic = ({
                 ...newHydroTrons.map(h => h.position)
               ];
               
-              if (newPurpleBullet && !newPurpleBullet.collected) {
-                allPositions.push(newPurpleBullet.position);
+              if (purpleBullet && !purpleBullet.collected) {
+                allPositions.push(purpleBullet.position);
               }
               
               const newTokenPosition = generateRandomPosition(gridSize, allPositions);
@@ -481,8 +490,8 @@ export const useGameLogic = ({
               ...newHydroTrons.map(h => h.position)
             ];
             
-            if (newPurpleBullet && !newPurpleBullet.collected) {
-              allPositions.push(newPurpleBullet.position);
+            if (purpleBullet && !purpleBullet.collected) {
+              allPositions.push(purpleBullet.position);
             }
             
             // Add three bonus tokens
@@ -646,7 +655,7 @@ export const useGameLogic = ({
         players: newPlayers,
         tokens: availableTokens.length > 0 ? availableTokens : prevState.tokens,
         bullets: activeBullets,
-        purpleBullet: purpleBulletCollected ? null : newPurpleBullet,
+        purpleBullet: purpleBulletCollected ? null : purpleBullet,
         hydroTrons: availableHydroTrons,
         gravitron: newGraviTron,
         gravitronActive,
