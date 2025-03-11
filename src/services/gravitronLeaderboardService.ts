@@ -68,17 +68,21 @@ const mockGetUserGraviTronRanking = async (userId: string, type: 'lifetime' | 't
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 600));
   
+  const baseResponse = {
+    rank: 121,
+    totalGravitrons: 567
+  };
+  
   if (type === 'lifetime') {
     return {
-      rank: 121,
+      ...baseResponse,
       count: 1,
-      totalGravitrons: 567
     };
   } else {
     return {
-      rank: 121,
+      ...baseResponse,
+      count: 0, // Required by the type, but not used for time rankings
       time: '2:35',
-      totalGravitrons: 567
     };
   }
 };
