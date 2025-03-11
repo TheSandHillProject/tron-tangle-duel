@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,9 +22,11 @@ const GraviTronLeaderboard = () => {
   const stats = useGraviTronStats();
   
   const handleBackClick = () => {
-    // Set the flag to show the gravitron end screen when returning to game
     setShowGraviTronEndScreen(true);
-    navigate('/game/single');
+    // Add a small delay to ensure state is updated before navigation
+    setTimeout(() => {
+      navigate('/game/single');
+    }, 50);
   };
   
   return (

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { GameState } from '@/utils/gameUtils';
 import { Button } from '@/components/ui/button';
@@ -26,59 +25,49 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
   const navigate = useNavigate();
   const { showGraviTronEndScreen, setShowGraviTronEndScreen } = useGameContext();
   
-  // Debug logs to track state changes
-  useEffect(() => {
-    console.log('GameOverlay: showGraviTronEndScreen =', showGraviTronEndScreen);
-    console.log('GameOverlay: gameState.gravitronDeath =', gameState.gravitronDeath);
-  }, [showGraviTronEndScreen, gameState.gravitronDeath]);
-  
-  // Show gravitron death screen if returning from leaderboard
-  if (showGraviTronEndScreen) {
-    // Reset the flag after rendering the screen
-    // Using setTimeout to ensure the flag is reset after the component has rendered
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        console.log('Resetting showGraviTronEndScreen flag');
-        setShowGraviTronEndScreen(false);
-      }, 100);
-      return () => clearTimeout(timer);
-    }, [setShowGraviTronEndScreen]);
-    
-    return (
-      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/90 backdrop-blur-sm animate-game-fade-in">
-        <div className="text-center">
-          <h2 className="text-4xl font-bold mb-4 text-red-500 animate-pulse">
-            Game Over!
-          </h2>
-          <p className="text-xl text-red-400 mb-8">
-            You have achieved heat death.
-          </p>
+  // Separate gravitron death screen component
+  const GraviTronDeathScreen = () => (
+    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/90 backdrop-blur-sm animate-game-fade-in">
+      <div className="text-center">
+        <h2 className="text-4xl font-bold mb-4 text-red-500 animate-pulse">
+          Game Over!
+        </h2>
+        <p className="text-xl text-red-400 mb-8">
+          You have achieved heat death.
+        </p>
+        
+        <div className="flex flex-col space-y-4 items-center">
+          <button 
+            onClick={() => {
+              setShowGraviTronEndScreen(false);
+              onResetRound();
+            }}
+            className="btn-glow px-6 py-2 bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30 rounded-lg"
+          >
+            Play Again
+          </button>
           
-          <div className="flex flex-col space-y-4 items-center">
-            <button 
-              onClick={onResetRound}
-              className="btn-glow px-6 py-2 bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30 rounded-lg"
-            >
-              Play Again
-            </button>
-            
-            <Button
-              onClick={() => navigate('/gravitron-leaderboard')}
-              className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white border border-red-500/50"
-            >
-              <Trophy className="h-4 w-4" />
-              <span>GraviTron Leaderboard</span>
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate('/gravitron-leaderboard')}
+            className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white border border-red-500/50"
+          >
+            <Trophy className="h-4 w-4" />
+            <span>GraviTron Leaderboard</span>
+          </Button>
         </div>
       </div>
-    );
+    </div>
+  );
+
+  // Show GraviTron death screen if flag is true or game state indicates it
+  if (showGraviTronEndScreen || (gameState.isGameOver && gameState.gravitronDeath)) {
+    return <GraviTronDeathScreen />;
   }
-  
+
   if (!gameState.isGameOver && !gameState.isGamePaused) {
     return null;
   }
-  
+
   // Handle gravitron heat death
   if (gameState.isGameOver && gameState.gravitronDeath) {
     return (
