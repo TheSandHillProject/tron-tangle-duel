@@ -22,7 +22,7 @@ export interface UserGraviTronRanking {
 // Mock data fetching function
 const mockFetchLifetimeLeaderboard = async (): Promise<GraviTronLifetimeEntry[]> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+  // await new Promise(resolve => setTimeout(resolve, 800));
   
   return [
     { id: 1, username: 'GraviMaster', count: 12, rank: 1, timestamp: new Date().toISOString() },
@@ -35,7 +35,7 @@ const mockFetchLifetimeLeaderboard = async (): Promise<GraviTronLifetimeEntry[]>
 
 const mockGetGraviTronStats = async (): Promise<GraviTronStats> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // await new Promise(resolve => setTimeout(resolve, 500));
   
   return {
     totalGravitrons: 567
