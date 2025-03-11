@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,27 +8,19 @@ import { Trophy, ArrowLeft, User } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
 import {
   useLifetimeLeaderboard,
-  useGraviTronStats
+  useGraviTronStats,
+  useUserGraviTronRanking
 } from '@/services/gravitronLeaderboardService';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGameContext } from '@/context/GameContext';
 
 const GraviTronLeaderboard = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const { setShowGraviTronEndScreen } = useGameContext();
   
   // Fetch data using React Query
   const lifetimeData = useLifetimeLeaderboard();
   const stats = useGraviTronStats();
-  
-  const handleBackClick = () => {
-    setShowGraviTronEndScreen(true);
-    // Add a small delay to ensure state is updated before navigation
-    setTimeout(() => {
-      navigate('/game/single');
-    }, 50);
-  };
+  const userLifetimeRanking = useUserGraviTronRanking(user?.id);
   
   return (
     <div className="min-h-screen flex flex-col bg-black text-white py-8 px-4">
@@ -36,7 +29,7 @@ const GraviTronLeaderboard = () => {
           <Button 
             variant="ghost" 
             className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-            onClick={handleBackClick}
+            onClick={() => navigate(-1)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -85,18 +78,18 @@ const GraviTronLeaderboard = () => {
                     </tr>
                     <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
                       <td className="p-4 font-mono">
-                        {lifetimeData.isLoading ? (
+                        {userLifetimeRanking.isLoading ? (
                           <Skeleton className="h-5 w-12" />
                         ) : (
-                          `#${user ? lifetimeData.data?.find(entry => entry.id.toString() === user.id)?.rank || '-' : '-'}`
+                          `#${userLifetimeRanking.data?.rank || '-'}`
                         )}
                       </td>
                       <td className="p-4 font-medium">You</td>
                       <td className="p-4 text-right font-mono text-red-300">
-                        {lifetimeData.isLoading ? (
+                        {userLifetimeRanking.isLoading ? (
                           <Skeleton className="h-5 w-8 ml-auto" />
                         ) : (
-                          user ? lifetimeData.data?.find(entry => entry.id.toString() === user.id)?.count || '-' : '-'
+                          userLifetimeRanking.data?.count || '-'
                         )}
                       </td>
                     </tr>
