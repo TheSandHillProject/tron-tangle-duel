@@ -87,7 +87,7 @@ const GraviTronLeaderboard = () => {
                         {lifetimeData.isLoading ? (
                           <Skeleton className="h-5 w-12" />
                         ) : (
-                          `#${user ? lifetimeData.data?.find(entry => entry.id === user.id)?.rank || '-' : '-'}`
+                          `#${user ? lifetimeData.data?.find(entry => entry.id.toString() === user.id)?.rank || '-' : '-'}`
                         )}
                       </td>
                       <td className="p-4 font-medium">You</td>
@@ -95,7 +95,7 @@ const GraviTronLeaderboard = () => {
                         {lifetimeData.isLoading ? (
                           <Skeleton className="h-5 w-8 ml-auto" />
                         ) : (
-                          user ? lifetimeData.data?.find(entry => entry.id === user.id)?.count || '-' : '-'
+                          user ? lifetimeData.data?.find(entry => entry.id.toString() === user.id)?.count || '-' : '-'
                         )}
                       </td>
                     </tr>
