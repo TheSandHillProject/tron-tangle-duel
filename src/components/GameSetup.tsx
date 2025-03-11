@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { useGameContext } from '@/context/GameContext';
 
 interface GameSetupProps {
   onSetupComplete: (gridWidth: number, gridHeight: number, fps: number) => void;
@@ -15,9 +17,10 @@ const GameSetup: React.FC<GameSetupProps> = ({
   initialGridHeight, 
   initialFPS 
 }) => {
+  const { savedFPS } = useGameContext();
   const [gridWidth, setGridWidth] = useState(initialGridWidth);
   const [gridHeight, setGridHeight] = useState(initialGridHeight);
-  const [fps, setFps] = useState(initialFPS);
+  const [fps, setFps] = useState(savedFPS || initialFPS);
   
   // Min and max values for sliders
   const minGridSize = 20;

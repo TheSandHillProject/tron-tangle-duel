@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -24,7 +25,7 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
-  const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom } = useGameContext();
+  const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom, savedFPS, setSavedFPS } = useGameContext();
   const { user, isLoading: isUserLoading } = useUserContext();
   const navigate = useNavigate();
   
@@ -32,7 +33,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const [gridWidth, setGridWidth] = useState<number>(DEFAULT_GRID_WIDTH);
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
-  const [framesPerSecond, setFramesPerSecond] = useState<number>(2);
+  const [framesPerSecond, setFramesPerSecond] = useState<number>(savedFPS);
   const [isSetup, setIsSetup] = useState<boolean>(true);
   const [needsLogin, setNeedsLogin] = useState<boolean>(false);
   const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
@@ -75,6 +76,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     setGridWidth(width);
     setGridHeight(height);
     setFramesPerSecond(fps);
+    setSavedFPS(fps); // Save FPS to context
     setIsSetup(false);
     setSkipSetup(true);
   };

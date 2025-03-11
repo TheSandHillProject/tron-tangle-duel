@@ -8,6 +8,8 @@ interface GameContextType {
   setLastGameMode: (mode: 'single' | 'two' | null) => void;
   navigatingFrom: string | null;
   setNavigatingFrom: (path: string | null) => void;
+  savedFPS: number;
+  setSavedFPS: (fps: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -16,6 +18,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [skipSetup, setSkipSetup] = useState(false);
   const [lastGameMode, setLastGameMode] = useState<'single' | 'two' | null>(null);
   const [navigatingFrom, setNavigatingFrom] = useState<string | null>(null);
+  const [savedFPS, setSavedFPS] = useState<number>(2); // Default FPS is 2
 
   return (
     <GameContext.Provider value={{ 
@@ -24,7 +27,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastGameMode, 
       setLastGameMode,
       navigatingFrom,
-      setNavigatingFrom
+      setNavigatingFrom,
+      savedFPS,
+      setSavedFPS
     }}>
       {children}
     </GameContext.Provider>
