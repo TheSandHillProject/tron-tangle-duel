@@ -246,17 +246,11 @@ export const removeTrailSegment = (trail: Position[], hitIndex: number): Positio
 export const resetRound = (gameState: GameState, singlePlayerMode: boolean = false): GameState => {
   const newPlayers = initializePlayers(gameState.gridSize, singlePlayerMode);
   
-  // Preserve only scores from previous round, reset special counters in single player mode
+  // Preserve scores from previous round
   for (let i = 0; i < Math.min(newPlayers.length, gameState.players.length); i++) {
     newPlayers[i].score = gameState.players[i].score;
-    // In two player mode, preserve neutronBombs and hydroTronsCollected
-    if (!singlePlayerMode) {
-      newPlayers[i].neutronBombs = gameState.players[i].neutronBombs;
-      newPlayers[i].hydroTronsCollected = gameState.players[i].hydroTronsCollected;
-    } else {
-      newPlayers[i].neutronBombs = 0;
-      newPlayers[i].hydroTronsCollected = 0;
-    }
+    newPlayers[i].neutronBombs = gameState.players[i].neutronBombs;
+    newPlayers[i].hydroTronsCollected = gameState.players[i].hydroTronsCollected;
   }
   
   return {
