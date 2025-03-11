@@ -10,7 +10,7 @@ import {
   STABILITY_THRESHOLD
 } from '@/utils/gameUtils';
 
-const NEUTRON_BOMB_THRESHOLD = 1; // Bullets required to generate a purple bullet (CHANGED FROM 10 TO 1)
+const NEUTRON_BOMB_THRESHOLD = 3; // Bullets required to generate a purple bullet (CHANGED FROM 10 TO 1)
 const HYDROTRON_THRESHOLD = 1; // HydroTrons required to generate a HydroTron (CHANGED FROM 3 TO 1)
 const GRAVITRON_THRESHOLD = 1; // HydroTrons required to generate a GraviTron (CHANGED FROM 3 TO 1)
 const BULLET_SPEED = 2; // Bullets move faster than players
