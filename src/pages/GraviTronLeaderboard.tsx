@@ -7,36 +7,25 @@ import { Separator } from '@/components/ui/separator';
 import BackToHome from '@/components/BackToHome';
 import { Trophy, Clock, ArrowLeft, User } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
-
-// Mock data for gravitron leaderboard
-const mockLifetimeData = [
-  { id: 1, username: 'GraviMaster', count: 12, rank: 1 },
-  { id: 2, username: 'CosmicDestroyer', count: 9, rank: 2 },
-  { id: 3, username: 'HeatDeath', count: 7, rank: 3 },
-  { id: 4, username: 'UniverseEnder', count: 5, rank: 4 },
-  { id: 5, username: 'EventHorizon', count: 3, rank: 5 },
-];
-
-const mockTimeData = [
-  { id: 1, username: 'SpeedRunner', time: '0:42', rank: 1 },
-  { id: 2, username: 'LightSpeed', time: '0:58', rank: 2 },
-  { id: 3, username: 'QuickTron', time: '1:03', rank: 3 },
-  { id: 4, username: 'FastCollapse', time: '1:15', rank: 4 },
-  { id: 5, username: 'RapidEnd', time: '1:21', rank: 5 },
-];
-
-// Mock user ranking data
-const mockUserRanking = {
-  rank: 121,
-  count: 1,
-  time: '2:35',
-  totalGravitrons: 567
-};
+import {
+  useLifetimeLeaderboard,
+  useTimeLeaderboard,
+  useGraviTronStats,
+  useUserGraviTronRanking
+} from '@/services/gravitronLeaderboardService';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const GraviTronLeaderboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('lifetime');
   const { user } = useUserContext();
+  
+  // Fetch data using React Query
+  const lifetimeData = useLifetimeLeaderboard();
+  const timeData = useTimeLeaderboard();
+  const stats = useGraviTronStats();
+  const userLifetimeRanking = useUserGraviTronRanking(user?.id, 'lifetime');
+  const userTimeRanking = useUserGraviTronRanking(user?.id, 'time');
   
   return (
     <div className="min-h-screen flex flex-col bg-black text-white py-8 px-4">
@@ -82,7 +71,15 @@ const GraviTronLeaderboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-red-900/30">
-                    {mockLifetimeData.map((entry) => (
+                    {lifetimeData.isLoading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className="bg-red-950/20">
+                          <td className="p-4"><Skeleton className="h-5 w-8" /></td>
+                          <td className="p-4"><Skeleton className="h-5 w-32" /></td>
+                          <td className="p-4 text-right"><Skeleton className="h-5 w-12 ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : lifetimeData.data?.map((entry) => (
                       <tr key={entry.id} className="bg-red-950/20 hover:bg-red-950/40 transition-colors">
                         <td className="p-4 font-mono">{entry.rank}</td>
                         <td className="p-4 font-medium">{entry.username}</td>
@@ -98,9 +95,21 @@ const GraviTronLeaderboard = () => {
                           </td>
                         </tr>
                         <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
-                          <td className="p-4 font-mono">#{mockUserRanking.rank}</td>
+                          <td className="p-4 font-mono">
+                            {userLifetimeRanking.isLoading ? (
+                              <Skeleton className="h-5 w-12" />
+                            ) : (
+                              `#${userLifetimeRanking.data?.rank || '-'}`
+                            )}
+                          </td>
                           <td className="p-4 font-medium">You</td>
-                          <td className="p-4 text-right font-mono text-red-300">{mockUserRanking.count}</td>
+                          <td className="p-4 text-right font-mono text-red-300">
+                            {userLifetimeRanking.isLoading ? (
+                              <Skeleton className="h-5 w-8 ml-auto" />
+                            ) : (
+                              userLifetimeRanking.data?.count || '-'
+                            )}
+                          </td>
                         </tr>
                       </>
                     )}
@@ -118,7 +127,13 @@ const GraviTronLeaderboard = () => {
               {user && (
                 <div className="flex justify-center items-center text-sm text-red-400/80 mt-4">
                   <Trophy className="h-4 w-4 mr-2 text-red-400/60" />
-                  <span>{mockUserRanking.totalGravitrons} total GraviTrons collected</span>
+                  <span>
+                    {stats.isLoading ? (
+                      <Skeleton className="h-4 w-32 inline-block" />
+                    ) : (
+                      `${stats.data?.totalGravitrons || 0} total GraviTrons collected`
+                    )}
+                  </span>
                 </div>
               )}
             </TabsContent>
@@ -134,7 +149,15 @@ const GraviTronLeaderboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-red-900/30">
-                    {mockTimeData.map((entry) => (
+                    {timeData.isLoading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className="bg-red-950/20">
+                          <td className="p-4"><Skeleton className="h-5 w-8" /></td>
+                          <td className="p-4"><Skeleton className="h-5 w-32" /></td>
+                          <td className="p-4 text-right"><Skeleton className="h-5 w-12 ml-auto" /></td>
+                        </tr>
+                      ))
+                    ) : timeData.data?.map((entry) => (
                       <tr key={entry.id} className="bg-red-950/20 hover:bg-red-950/40 transition-colors">
                         <td className="p-4 font-mono">{entry.rank}</td>
                         <td className="p-4 font-medium">{entry.username}</td>
@@ -150,9 +173,21 @@ const GraviTronLeaderboard = () => {
                           </td>
                         </tr>
                         <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
-                          <td className="p-4 font-mono">#{mockUserRanking.rank}</td>
+                          <td className="p-4 font-mono">
+                            {userTimeRanking.isLoading ? (
+                              <Skeleton className="h-5 w-12" />
+                            ) : (
+                              `#${userTimeRanking.data?.rank || '-'}`
+                            )}
+                          </td>
                           <td className="p-4 font-medium">You</td>
-                          <td className="p-4 text-right font-mono text-red-300">{mockUserRanking.time}</td>
+                          <td className="p-4 text-right font-mono text-red-300">
+                            {userTimeRanking.isLoading ? (
+                              <Skeleton className="h-5 w-8 ml-auto" />
+                            ) : (
+                              userTimeRanking.data?.time || '-'
+                            )}
+                          </td>
                         </tr>
                       </>
                     )}
@@ -170,7 +205,13 @@ const GraviTronLeaderboard = () => {
               {user && (
                 <div className="flex justify-center items-center text-sm text-red-400/80 mt-4">
                   <Trophy className="h-4 w-4 mr-2 text-red-400/60" />
-                  <span>{mockUserRanking.totalGravitrons} total GraviTrons collected</span>
+                  <span>
+                    {stats.isLoading ? (
+                      <Skeleton className="h-4 w-32 inline-block" />
+                    ) : (
+                      `${stats.data?.totalGravitrons || 0} total GraviTrons collected`
+                    )}
+                  </span>
                 </div>
               )}
             </TabsContent>
