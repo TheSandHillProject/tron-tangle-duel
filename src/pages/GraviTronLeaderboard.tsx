@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import BackToHome from '@/components/BackToHome';
-import { Trophy, ArrowLeft, User } from 'lucide-react';
+import { Trophy, User } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
 import {
   useLifetimeLeaderboard,
@@ -14,7 +13,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 const GraviTronLeaderboard = () => {
-  const navigate = useNavigate();
   const { user } = useUserContext();
   
   // Fetch data using React Query
@@ -25,21 +23,10 @@ const GraviTronLeaderboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-black text-white py-8 px-4">
       <div className="w-full max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <Button 
-            variant="ghost" 
-            className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          
+        <div className="flex items-center justify-center mb-8">
           <h1 className="text-3xl font-bold text-red-500 font-space" style={{textShadow: '0 0 10px #ff0000, 0 0 20px #ff0000'}}>
             GRAVITRON LEADERBOARD
           </h1>
-          
-          <div className="w-24"></div> {/* Spacer to center the title */}
         </div>
         
         <div className="glass-panel bg-red-950/30 border-red-900/50 rounded-xl p-6 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
