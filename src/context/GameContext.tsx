@@ -1,41 +1,59 @@
 
-import React, { createContext, useState, useContext } from 'react';
+// Import React and create context
+import React, { createContext, useContext, useState } from 'react';
 
 interface GameContextType {
   skipSetup: boolean;
-  setSkipSetup: (skip: boolean) => void;
-  lastGameMode: 'single' | 'two' | null;
-  setLastGameMode: (mode: 'single' | 'two' | null) => void;
+  setSkipSetup: React.Dispatch<React.SetStateAction<boolean>>;
+  lastGameMode: 'single' | 'two';
+  setLastGameMode: React.Dispatch<React.SetStateAction<'single' | 'two'>>;
   navigatingFrom: string | null;
-  setNavigatingFrom: (path: string | null) => void;
+  setNavigatingFrom: React.Dispatch<React.SetStateAction<string | null>>;
   savedFPS: number;
-  setSavedFPS: (fps: number) => void;
+  setSavedFPS: React.Dispatch<React.SetStateAction<number>>;
+  showGraviTronEndScreen: boolean;
+  setShowGraviTronEndScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const GameContext = createContext<GameContextType | undefined>(undefined);
+// Create context with default values
+const GameContext = createContext<GameContextType>({
+  skipSetup: false,
+  setSkipSetup: () => {},
+  lastGameMode: 'single',
+  setLastGameMode: () => {},
+  navigatingFrom: null,
+  setNavigatingFrom: () => {},
+  savedFPS: 15,
+  setSavedFPS: () => {},
+  showGraviTronEndScreen: false,
+  setShowGraviTronEndScreen: () => {},
+});
 
+// Provider component
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [skipSetup, setSkipSetup] = useState(false);
-  const [lastGameMode, setLastGameMode] = useState<'single' | 'two' | null>(null);
+  const [skipSetup, setSkipSetup] = useState<boolean>(false);
+  const [lastGameMode, setLastGameMode] = useState<'single' | 'two'>('single');
   const [navigatingFrom, setNavigatingFrom] = useState<string | null>(null);
-  const [savedFPS, setSavedFPS] = useState<number>(2); // Default FPS is 2
+  const [savedFPS, setSavedFPS] = useState<number>(15);
+  const [showGraviTronEndScreen, setShowGraviTronEndScreen] = useState<boolean>(false);
 
-  return (
-    <GameContext.Provider value={{ 
-      skipSetup, 
-      setSkipSetup, 
-      lastGameMode, 
-      setLastGameMode,
-      navigatingFrom,
-      setNavigatingFrom,
-      savedFPS,
-      setSavedFPS
-    }}>
-      {children}
-    </GameContext.Provider>
-  );
+  const value = {
+    skipSetup,
+    setSkipSetup,
+    lastGameMode,
+    setLastGameMode,
+    navigatingFrom,
+    setNavigatingFrom,
+    savedFPS,
+    setSavedFPS,
+    showGraviTronEndScreen,
+    setShowGraviTronEndScreen,
+  };
+
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
 
+// Custom hook for using the context
 export const useGameContext = () => {
   const context = useContext(GameContext);
   if (context === undefined) {

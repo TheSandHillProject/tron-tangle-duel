@@ -12,15 +12,23 @@ import {
   useUserGraviTronRanking
 } from '@/services/gravitronLeaderboardService';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGameContext } from '@/context/GameContext';
 
 const GraviTronLeaderboard = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
+  const { setShowGraviTronEndScreen } = useGameContext();
   
   // Fetch data using React Query
   const lifetimeData = useLifetimeLeaderboard();
   const stats = useGraviTronStats();
   const userLifetimeRanking = useUserGraviTronRanking(user?.id);
+  
+  const handleBackClick = () => {
+    // Set the flag to show the gravitron end screen when returning to game
+    setShowGraviTronEndScreen(true);
+    navigate('/game/single');
+  };
   
   return (
     <div className="min-h-screen flex flex-col bg-black text-white py-8 px-4">
@@ -29,7 +37,7 @@ const GraviTronLeaderboard = () => {
           <Button 
             variant="ghost" 
             className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-            onClick={() => navigate(-1)}
+            onClick={handleBackClick}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
