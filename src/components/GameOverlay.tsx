@@ -12,7 +12,6 @@ interface GameOverlayProps {
   highScore: number;
   onResetRound: () => void;
   onResumeGame: () => void;
-  gameTime?: number;
 }
 
 const GameOverlay: React.FC<GameOverlayProps> = ({
@@ -21,8 +20,7 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
   bulletsCollected,
   highScore,
   onResetRound,
-  onResumeGame,
-  gameTime = 0
+  onResumeGame
 }) => {
   const navigate = useNavigate();
   
@@ -30,29 +28,16 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
     return null;
   }
   
-  // Format time as MM:SS
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-  
-  console.log("GameOverlay received gameTime:", gameTime);
-  
   // Handle gravitron heat death
   if (gameState.isGameOver && gameState.gravitronDeath) {
-    console.log("Rendering heat death screen with time:", gameTime);
     return (
       <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/90 backdrop-blur-sm animate-game-fade-in">
         <div className="text-center">
           <h2 className="text-4xl font-bold mb-4 text-red-500 animate-pulse">
             Game Over!
           </h2>
-          <p className="text-xl text-red-400 mb-2">
-            You have achieved heat death
-          </p>
-          <p className="text-xl mb-8">
-            in <span className="text-red-500 animate-pulse font-bold">{formatTime(gameTime)}</span>
+          <p className="text-xl text-red-400 mb-8">
+            You have achieved heat death.
           </p>
           
           <div className="flex flex-col space-y-4 items-center">
