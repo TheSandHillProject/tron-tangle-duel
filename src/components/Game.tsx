@@ -33,7 +33,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     setNavigatingFrom, 
     savedFPS, 
     setSavedFPS,
-    setGameTime 
+    setGameTime
   } = useGameContext();
   const { user, isLoading: isUserLoading } = useUserContext();
   const navigate = useNavigate();
@@ -124,8 +124,20 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
 
   // Game timer logic
   useEffect(() => {
+    // Clear any existing timer when component mounts or unmounts
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Start/stop timer based on game state
+  useEffect(() => {
     // Start timer when single player game begins
     if (!isSetup && gameMode === 'single' && !gameState.isGameOver && !gameState.isGamePaused) {
+      console.log("Starting timer");
       // If timer isn't already running, start it
       if (!timerRef.current) {
         timerStartTimeRef.current = Date.now() - (elapsedTime * 1000); // Adjust for any previous time
@@ -134,33 +146,35 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           if (timerStartTimeRef.current) {
             const currentElapsed = Math.floor((Date.now() - timerStartTimeRef.current) / 1000);
             setElapsedTime(currentElapsed);
+            console.log("Time updated:", currentElapsed);
           }
         }, 1000);
       }
     } else if (timerRef.current && (gameState.isGamePaused || gameState.isGameOver || isSetup || gameMode !== 'single')) {
       // Stop timer if game is paused, over, in setup, or not in single player mode
+      console.log("Stopping timer, game paused:", gameState.isGamePaused, "game over:", gameState.isGameOver);
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     
     // If game is over in single player mode and GraviTron was collected, save the final time
     if (gameState.isGameOver && gameMode === 'single' && gameState.gravitronDeath) {
+      console.log("Game over with gravitron death, saving time:", elapsedTime);
       setGameTime(elapsedTime);
     }
-    
-    // Cleanup timer on unmount
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
   }, [isSetup, gameMode, gameState.isGameOver, gameState.isGamePaused, gameState.gravitronDeath, elapsedTime, setGameTime]);
 
   // Reset timer when starting a new game or round
   useEffect(() => {
     if (isSetup || (gameMode === 'single' && gameState.round === 1 && !gameState.isGameOver)) {
+      console.log("Resetting timer");
       setElapsedTime(0);
       timerStartTimeRef.current = null;
+      
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
   }, [isSetup, gameMode, gameState.round, gameState.isGameOver]);
 

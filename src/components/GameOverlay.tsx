@@ -37,8 +37,11 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
   
+  console.log("GameOverlay received gameTime:", gameTime);
+  
   // Handle gravitron heat death
   if (gameState.isGameOver && gameState.gravitronDeath) {
+    console.log("Rendering heat death screen with time:", gameTime);
     return (
       <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/90 backdrop-blur-sm animate-game-fade-in">
         <div className="text-center">
