@@ -9,26 +9,17 @@ export interface GraviTronLifetimeEntry {
   timestamp: string;
 }
 
-export interface GraviTronTimeEntry {
-  id: number;
-  username: string;
-  time: string;
-  rank: number;
-  timestamp: string;
-}
-
 export interface GraviTronStats {
   totalGravitrons: number;
 }
 
 export interface UserGraviTronRanking {
   rank: number;
-  count: number; // For lifetime rankings
-  time?: string; // For time-based rankings
+  count: number;
   totalGravitrons: number;
 }
 
-// Mock data fetching functions
+// Mock data fetching function
 const mockFetchLifetimeLeaderboard = async (): Promise<GraviTronLifetimeEntry[]> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 800));
@@ -42,19 +33,6 @@ const mockFetchLifetimeLeaderboard = async (): Promise<GraviTronLifetimeEntry[]>
   ];
 };
 
-const mockFetchTimeLeaderboard = async (): Promise<GraviTronTimeEntry[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  return [
-    { id: 1, username: 'SpeedRunner', time: '0:42', rank: 1, timestamp: new Date().toISOString() },
-    { id: 2, username: 'LightSpeed', time: '0:58', rank: 2, timestamp: new Date().toISOString() },
-    { id: 3, username: 'QuickTron', time: '1:03', rank: 3, timestamp: new Date().toISOString() },
-    { id: 4, username: 'FastCollapse', time: '1:15', rank: 4, timestamp: new Date().toISOString() },
-    { id: 5, username: 'RapidEnd', time: '1:21', rank: 5, timestamp: new Date().toISOString() },
-  ];
-};
-
 const mockGetGraviTronStats = async (): Promise<GraviTronStats> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -64,37 +42,24 @@ const mockGetGraviTronStats = async (): Promise<GraviTronStats> => {
   };
 };
 
-const mockGetUserGraviTronRanking = async (userId: string, type: 'lifetime' | 'time'): Promise<UserGraviTronRanking> => {
+const mockGetUserGraviTronRanking = async (userId: string): Promise<UserGraviTronRanking> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 600));
   
-  const baseResponse = {
+  return {
     rank: 121,
+    count: 1,
     totalGravitrons: 567
   };
-  
-  if (type === 'lifetime') {
-    return {
-      ...baseResponse,
-      count: 1,
-    };
-  } else {
-    return {
-      ...baseResponse,
-      count: 0, // Required by the type, but not used for time rankings
-      time: '2:35',
-    };
-  }
 };
 
 export const submitGraviTronScore = async (
   userId: string, 
   username: string, 
-  type: 'lifetime' | 'time', 
-  value: number | string
+  value: number
 ): Promise<void> => {
   // In a real implementation, this would send the score to your backend
-  console.log(`Submitting GraviTron ${type} for ${username} (${userId}): ${value}`);
+  console.log(`Submitting GraviTron lifetime for ${username} (${userId}): ${value}`);
   await new Promise(resolve => setTimeout(resolve, 300));
 };
 
@@ -107,14 +72,6 @@ export const useLifetimeLeaderboard = () => {
   });
 };
 
-export const useTimeLeaderboard = () => {
-  return useQuery({
-    queryKey: ['gravitron', 'time'],
-    queryFn: () => mockFetchTimeLeaderboard(),
-    staleTime: 60 * 1000, // 1 minute
-  });
-};
-
 export const useGraviTronStats = () => {
   return useQuery({
     queryKey: ['gravitron', 'stats'],
@@ -123,10 +80,10 @@ export const useGraviTronStats = () => {
   });
 };
 
-export const useUserGraviTronRanking = (userId: string | undefined, type: 'lifetime' | 'time') => {
+export const useUserGraviTronRanking = (userId: string | undefined) => {
   return useQuery({
-    queryKey: ['userGraviTron', userId, type],
-    queryFn: () => userId ? mockGetUserGraviTronRanking(userId, type) : Promise.resolve(null),
+    queryKey: ['userGraviTron', userId],
+    queryFn: () => userId ? mockGetUserGraviTronRanking(userId) : Promise.resolve(null),
     staleTime: 60 * 1000, // 1 minute
     enabled: !!userId, // Only run query if userId exists
   });
