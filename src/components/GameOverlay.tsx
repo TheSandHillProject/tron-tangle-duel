@@ -12,6 +12,7 @@ interface GameOverlayProps {
   highScore: number;
   onResetRound: () => void;
   onResumeGame: () => void;
+  gameTime?: number;
 }
 
 const GameOverlay: React.FC<GameOverlayProps> = ({
@@ -20,13 +21,21 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
   bulletsCollected,
   highScore,
   onResetRound,
-  onResumeGame
+  onResumeGame,
+  gameTime = 0
 }) => {
   const navigate = useNavigate();
   
   if (!gameState.isGameOver && !gameState.isGamePaused) {
     return null;
   }
+  
+  // Format time as MM:SS
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
   
   // Handle gravitron heat death
   if (gameState.isGameOver && gameState.gravitronDeath) {
@@ -36,8 +45,11 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
           <h2 className="text-4xl font-bold mb-4 text-red-500 animate-pulse">
             Game Over!
           </h2>
-          <p className="text-xl text-red-400 mb-8">
-            You have achieved heat death.
+          <p className="text-xl text-red-400 mb-2">
+            You have achieved heat death
+          </p>
+          <p className="text-xl mb-8">
+            in <span className="text-red-500 animate-pulse font-bold">{formatTime(gameTime)}</span>
           </p>
           
           <div className="flex flex-col space-y-4 items-center">

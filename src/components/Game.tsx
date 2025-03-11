@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
 import GameControls from './GameControls';
@@ -25,7 +25,16 @@ const DEFAULT_GRID_WIDTH = 50;
 const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
-  const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom, savedFPS, setSavedFPS } = useGameContext();
+  const { 
+    skipSetup, 
+    setSkipSetup, 
+    setLastGameMode, 
+    navigatingFrom, 
+    setNavigatingFrom, 
+    savedFPS, 
+    setSavedFPS,
+    setGameTime 
+  } = useGameContext();
   const { user, isLoading: isUserLoading } = useUserContext();
   const navigate = useNavigate();
   
@@ -37,6 +46,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   const [isSetup, setIsSetup] = useState<boolean>(true);
   const [needsLogin, setNeedsLogin] = useState<boolean>(false);
   const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
+  
+  // Timer state for single player mode
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerStartTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -107,6 +121,48 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
     framesPerSecond,
     isSetup
   });
+
+  // Game timer logic
+  useEffect(() => {
+    // Start timer when single player game begins
+    if (!isSetup && gameMode === 'single' && !gameState.isGameOver && !gameState.isGamePaused) {
+      // If timer isn't already running, start it
+      if (!timerRef.current) {
+        timerStartTimeRef.current = Date.now() - (elapsedTime * 1000); // Adjust for any previous time
+        
+        timerRef.current = setInterval(() => {
+          if (timerStartTimeRef.current) {
+            const currentElapsed = Math.floor((Date.now() - timerStartTimeRef.current) / 1000);
+            setElapsedTime(currentElapsed);
+          }
+        }, 1000);
+      }
+    } else if (timerRef.current && (gameState.isGamePaused || gameState.isGameOver || isSetup || gameMode !== 'single')) {
+      // Stop timer if game is paused, over, in setup, or not in single player mode
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // If game is over in single player mode and GraviTron was collected, save the final time
+    if (gameState.isGameOver && gameMode === 'single' && gameState.gravitronDeath) {
+      setGameTime(elapsedTime);
+    }
+    
+    // Cleanup timer on unmount
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isSetup, gameMode, gameState.isGameOver, gameState.isGamePaused, gameState.gravitronDeath, elapsedTime, setGameTime]);
+
+  // Reset timer when starting a new game or round
+  useEffect(() => {
+    if (isSetup || (gameMode === 'single' && gameState.round === 1 && !gameState.isGameOver)) {
+      setElapsedTime(0);
+      timerStartTimeRef.current = null;
+    }
+  }, [isSetup, gameMode, gameState.round, gameState.isGameOver]);
 
   useEffect(() => {
     if (
@@ -240,6 +296,9 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
                 <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
                   HydroTrons: {gameState.players[0]?.hydroTronsCollected || 0}
                 </div>
+                <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                  Time: {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+                </div>
               </>
             )}
           </div>
@@ -273,6 +332,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           highScore={highScore}
           onResetRound={handleResetRound}
           onResumeGame={handleResumeGame}
+          gameTime={elapsedTime}
         />
         
         <div className="glass-panel rounded-xl p-2 overflow-hidden animate-game-fade-in">
