@@ -1,6 +1,6 @@
 
 // Import React and create context
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface GameContextType {
   skipSetup: boolean;
@@ -36,6 +36,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [navigatingFrom, setNavigatingFrom] = useState<string | null>(null);
   const [savedFPS, setSavedFPS] = useState<number>(15);
   const [showGraviTronEndScreen, setShowGraviTronEndScreen] = useState<boolean>(false);
+
+  // Debug logs to track state changes
+  useEffect(() => {
+    console.log('GameContext: showGraviTronEndScreen changed to', showGraviTronEndScreen);
+  }, [showGraviTronEndScreen]);
 
   const value = {
     skipSetup,

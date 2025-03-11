@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GameState } from '@/utils/gameUtils';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -26,10 +26,23 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
   const navigate = useNavigate();
   const { showGraviTronEndScreen, setShowGraviTronEndScreen } = useGameContext();
   
+  // Debug logs to track state changes
+  useEffect(() => {
+    console.log('GameOverlay: showGraviTronEndScreen =', showGraviTronEndScreen);
+    console.log('GameOverlay: gameState.gravitronDeath =', gameState.gravitronDeath);
+  }, [showGraviTronEndScreen, gameState.gravitronDeath]);
+  
   // Show gravitron death screen if returning from leaderboard
   if (showGraviTronEndScreen) {
-    // Reset the flag after showing the screen
-    setTimeout(() => setShowGraviTronEndScreen(false), 100);
+    // Reset the flag after rendering the screen
+    // Using setTimeout to ensure the flag is reset after the component has rendered
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        console.log('Resetting showGraviTronEndScreen flag');
+        setShowGraviTronEndScreen(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }, [setShowGraviTronEndScreen]);
     
     return (
       <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/90 backdrop-blur-sm animate-game-fade-in">

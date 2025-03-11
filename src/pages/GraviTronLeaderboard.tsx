@@ -8,8 +8,7 @@ import { Trophy, ArrowLeft, User } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
 import {
   useLifetimeLeaderboard,
-  useGraviTronStats,
-  useUserGraviTronRanking
+  useGraviTronStats
 } from '@/services/gravitronLeaderboardService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGameContext } from '@/context/GameContext';
@@ -22,7 +21,6 @@ const GraviTronLeaderboard = () => {
   // Fetch data using React Query
   const lifetimeData = useLifetimeLeaderboard();
   const stats = useGraviTronStats();
-  const userLifetimeRanking = useUserGraviTronRanking(user?.id);
   
   const handleBackClick = () => {
     // Set the flag to show the gravitron end screen when returning to game
@@ -86,18 +84,18 @@ const GraviTronLeaderboard = () => {
                     </tr>
                     <tr className="bg-red-950/40 hover:bg-red-950/60 transition-colors">
                       <td className="p-4 font-mono">
-                        {userLifetimeRanking.isLoading ? (
+                        {lifetimeData.isLoading ? (
                           <Skeleton className="h-5 w-12" />
                         ) : (
-                          `#${userLifetimeRanking.data?.rank || '-'}`
+                          `#${user ? lifetimeData.data?.find(entry => entry.id === user.id)?.rank || '-' : '-'}`
                         )}
                       </td>
                       <td className="p-4 font-medium">You</td>
                       <td className="p-4 text-right font-mono text-red-300">
-                        {userLifetimeRanking.isLoading ? (
+                        {lifetimeData.isLoading ? (
                           <Skeleton className="h-5 w-8 ml-auto" />
                         ) : (
-                          userLifetimeRanking.data?.count || '-'
+                          user ? lifetimeData.data?.find(entry => entry.id === user.id)?.count || '-' : '-'
                         )}
                       </td>
                     </tr>
