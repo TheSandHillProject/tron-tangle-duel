@@ -19,7 +19,8 @@ export interface UserGraviTronRanking {
   totalGravitrons: number;
 }
 
-// Mock data fetching function
+// --------- API GETS functions ---------
+
 const mockFetchLifetimeLeaderboard = async (): Promise<GraviTronLifetimeEntry[]> => {
   // Simulate API delay
   // await new Promise(resolve => setTimeout(resolve, 800));
@@ -52,6 +53,39 @@ const mockGetUserGraviTronRanking = async (userId: string): Promise<UserGraviTro
   };
 };
 
+// --------- React Query Hooks ---------
+
+// Pulls the gravitron leaderboard
+export const useLifetimeLeaderboard = () => {
+  return useQuery({
+    queryKey: ['gravitron', 'lifetime'],
+    queryFn: () => mockFetchLifetimeLeaderboard(),
+    staleTime: 60 * 1000, // 1 minute
+  });
+};
+
+// Pulls database stats (i.e. how many total gravitrons have been collected)
+export const useGraviTronStats = () => {
+  return useQuery({
+    queryKey: ['gravitron', 'stats'],
+    queryFn: () => mockGetGraviTronStats(),
+    staleTime: 60 * 1000, // 1 minute
+  });
+};
+
+// Pulls user ranking and stats for gravitron
+export const useUserGraviTronRanking = (userId: string | undefined) => {
+  return useQuery({
+    queryKey: ['userGraviTron', userId],
+    queryFn: () => userId ? mockGetUserGraviTronRanking(userId) : Promise.resolve(null),
+    staleTime: 60 * 1000, // 1 minute
+    enabled: !!userId, // Only run query if userId exists
+  });
+};
+
+
+// --------- API POST functions ---------
+
 export const submitGraviTronScore = async (
   userId: string, 
   username: string, 
@@ -62,28 +96,3 @@ export const submitGraviTronScore = async (
   await new Promise(resolve => setTimeout(resolve, 300));
 };
 
-// React Query hooks
-export const useLifetimeLeaderboard = () => {
-  return useQuery({
-    queryKey: ['gravitron', 'lifetime'],
-    queryFn: () => mockFetchLifetimeLeaderboard(),
-    staleTime: 60 * 1000, // 1 minute
-  });
-};
-
-export const useGraviTronStats = () => {
-  return useQuery({
-    queryKey: ['gravitron', 'stats'],
-    queryFn: () => mockGetGraviTronStats(),
-    staleTime: 60 * 1000, // 1 minute
-  });
-};
-
-export const useUserGraviTronRanking = (userId: string | undefined) => {
-  return useQuery({
-    queryKey: ['userGraviTron', userId],
-    queryFn: () => userId ? mockGetUserGraviTronRanking(userId) : Promise.resolve(null),
-    staleTime: 60 * 1000, // 1 minute
-    enabled: !!userId, // Only run query if userId exists
-  });
-};
