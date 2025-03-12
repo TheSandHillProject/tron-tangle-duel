@@ -18,7 +18,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [skipSetup, setSkipSetup] = useState(false);
   const [lastGameMode, setLastGameMode] = useState<'single' | 'two' | null>(null);
   const [navigatingFrom, setNavigatingFrom] = useState<string | null>(null);
-  const [savedFPS, setSavedFPS] = useState<number>(2); // Default FPS is 2
+  const [savedFPS, setSavedFPS] = useState<number>(5); // Default FPS is 5
 
   return (
     <GameContext.Provider value={{ 
