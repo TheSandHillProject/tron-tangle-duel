@@ -44,7 +44,6 @@ const mockGetGraviTronStats = async (): Promise<GraviTronStats> => {
 
 const mockGetUserGraviTronRanking = async (userId: string): Promise<UserGraviTronRanking> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 600));
   
   return {
     rank: 121,
