@@ -26,7 +26,7 @@ const GameSetup: React.FC<GameSetupProps> = ({
   const minGridSize = 20;
   const maxGridSize = 80;
   const minFps = 2;
-  const maxFps = 20;
+  const maxFps = 200;
   
   const handleStartGame = () => {
     onSetupComplete(gridWidth, gridHeight, fps);
