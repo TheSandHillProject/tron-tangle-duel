@@ -41,7 +41,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
       await login(email.trim(), screenName.trim());
       if (onComplete) onComplete();
     } catch (err) {
-      setError('Failed to log in. Please try again later.');
+      setError('Failed to log in. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

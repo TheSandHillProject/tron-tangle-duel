@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useGameContext } from '@/context/GameContext';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 
 interface GameSetupProps {
   onSetupComplete: (gridWidth: number, gridHeight: number, fps: number) => void;
@@ -23,7 +21,6 @@ const GameSetup: React.FC<GameSetupProps> = ({
   const [gridWidth, setGridWidth] = useState(initialGridWidth);
   const [gridHeight, setGridHeight] = useState(initialGridHeight);
   const [fps, setFps] = useState(savedFPS || initialFPS);
-  const [devMode, setDevMode] = useState(false);
   
   // Min and max values for sliders
   const minGridSize = 20;
@@ -32,10 +29,6 @@ const GameSetup: React.FC<GameSetupProps> = ({
   const maxFps = 20;
   
   const handleStartGame = () => {
-    // You could use devMode here or pass it to a context
-    // For now we'll just log it
-    console.log("Dev mode:", devMode);
-    
     onSetupComplete(gridWidth, gridHeight, fps);
   };
   
@@ -93,19 +86,6 @@ const GameSetup: React.FC<GameSetupProps> = ({
           <div className="text-xs text-tron-text/60 text-center mt-1">
             Higher FPS = Faster Game
           </div>
-        </div>
-        
-        {/* Dev Mode Toggle - You can remove this in production */}
-        <div className="flex items-center space-x-2 pt-2 pb-2">
-          <Switch 
-            id="dev-mode" 
-            checked={devMode} 
-            onCheckedChange={setDevMode} 
-            className="data-[state=checked]:bg-tron-blue" 
-          />
-          <Label htmlFor="dev-mode" className="text-sm text-tron-text/80">
-            Development Mode (Mock API)
-          </Label>
         </div>
         
         <div className="pt-4">
