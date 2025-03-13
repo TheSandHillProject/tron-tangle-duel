@@ -24,7 +24,7 @@ const GameSetup: React.FC<GameSetupProps> = ({
   
   // Min and max values for sliders
   const minGridSize = 20;
-  const maxGridSize = 80;
+  const maxGridSize = 800;
   const minFps = 2;
   const maxFps = 200;
   
