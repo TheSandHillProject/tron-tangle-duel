@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, loginUser, updateLastSeen, mockLoginUser, mockUpdateLastSeen } from '../services/apiService';
 import { toast } from '@/components/ui/use-toast';
@@ -13,7 +12,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Environment flag to use mock API (for development without backend)
-const USE_MOCK_API = false; // Set to true for development without backend
+const USE_MOCK_API = true; // Set to true for development without backend
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
