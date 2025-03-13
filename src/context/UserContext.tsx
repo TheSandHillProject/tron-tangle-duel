@@ -1,12 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  lastSeen: Date;
-}
+import { User, loginUser, updateLastSeen, mockLoginUser, mockUpdateLastSeen } from '../services/apiService';
+import { toast } from '@/components/ui/use-toast';
 
 interface UserContextType {
   user: User | null;
@@ -17,26 +12,8 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock API functions (these would connect to your backend)
-const mockLoginUser = async (email: string, username: string): Promise<User> => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // In a real implementation, this would validate with the backend
-  // and retrieve or create the user
-  return {
-    id: `user-${Math.floor(Math.random() * 100000)}`,
-    email,
-    username,
-    lastSeen: new Date()
-  };
-};
-
-const mockUpdateLastSeen = async (userId: string): Promise<void> => {
-  // In a real implementation, this would update the lastSeen timestamp on the backend
-  await new Promise(resolve => setTimeout(resolve, 300));
-  console.log(`Updated last seen for user ${userId}`);
-};
+// Environment flag to use mock API (for development without backend)
+const USE_MOCK_API = false; // Set to true for development without backend
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,10 +25,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setUser({
-          ...parsedUser,
-          lastSeen: new Date(parsedUser.lastSeen) // Convert string to Date
-        });
+        setUser(parsedUser);
       } catch (error) {
         console.error('Failed to parse stored user', error);
         localStorage.removeItem('tron-user');
@@ -65,16 +39,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     // Update lastSeen when user first logs in
-    mockUpdateLastSeen(user.id);
+    const updateFn = USE_MOCK_API ? mockUpdateLastSeen : updateLastSeen;
+    updateFn(user.id).catch(error => {
+      console.error('Failed to update last seen:', error);
+    });
     
     // Then update periodically
     const interval = setInterval(() => {
-      mockUpdateLastSeen(user.id);
-      // Update local state too
-      setUser(prev => prev ? {
-        ...prev,
-        lastSeen: new Date()
-      } : null);
+      updateFn(user.id).catch(error => {
+        console.error('Failed to update last seen periodically:', error);
+      });
     }, 5 * 60 * 1000); // Every 5 minutes
     
     return () => clearInterval(interval);
@@ -83,11 +57,26 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, username: string) => {
     setIsLoading(true);
     try {
-      const newUser = await mockLoginUser(email, username);
+      // Use either the real API or the mock API
+      const loginFn = USE_MOCK_API ? mockLoginUser : loginUser;
+      const newUser = await loginFn(email, username);
+      
       setUser(newUser);
       localStorage.setItem('tron-user', JSON.stringify(newUser));
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome, ${username}!`,
+        duration: 3000
+      });
     } catch (error) {
       console.error('Login failed', error);
+      toast({
+        title: "Login Failed",
+        description: "Could not connect to the server. Please try again.",
+        variant: "destructive",
+        duration: 3000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +85,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('tron-user');
     setUser(null);
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+      duration: 3000
+    });
   };
 
   return (
