@@ -11,7 +11,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   return (
-    <div className="mt-4">
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
         <AlertDialogTrigger asChild>
           <Button 
@@ -142,7 +141,6 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
   );
 };
 
