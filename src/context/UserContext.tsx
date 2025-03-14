@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 interface User {
@@ -18,29 +17,66 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // ---- API Calls ----
-const mockLoginUser = async (email: string, username: string): Promise<User> => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // In a real implementation, this would validate with the backend
-  // and retrieve or create the user
-  return {
-    id: `user-${Math.floor(Math.random() * 100000)}`,
-    email,
-    username,
-    lastSeen: new Date()
-  };
+const loginUser = async (email: string, username: string): Promise<User> => {
+  try {
+    const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, name: username }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
+
+    const data = await response.json();
+    const token = data.token;
+
+    // Store JWT in localStorage
+    localStorage.setItem("tron-token", token);
+
+    return {
+      id: email, // We don't get a user ID from the backend yet, so use email
+      email,
+      username,
+      lastSeen: new Date(),
+    };
+  } catch (error) {
+    console.error("Login request failed", error);
+    throw error;
+  }
 };
 
-const mockUpdateLastSeen = async (userId: string): Promise<void> => {
-  // In a real implementation, this would update the lastSeen timestamp on the backend
-  await new Promise(resolve => setTimeout(resolve, 300));
-  console.log(`Updated last seen for user ${userId}`);
-};
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const updateLastSeen = async () => {
+    const token = localStorage.getItem("tron-token");
+    if (!token) return;
+  
+    try {
+      const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/users", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update last seen");
+      }
+  
+      const data = await response.json();
+      setUser(prev => prev ? { ...prev, lastSeen: new Date(data.last_seen) } : null);
+    } catch (error) {
+      console.error("Failed to update last seen", error);
+    }
+  };
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -67,11 +103,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     // Update lastSeen when user first logs in
-    mockUpdateLastSeen(user.id);
+    updateLastSeen();
+
     
     // Then update periodically
     const interval = setInterval(() => {
-      mockUpdateLastSeen(user.id);
+      updateLastSeen();
       // Update local state too
       setUser(prev => prev ? {
         ...prev,
@@ -85,11 +122,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, username: string) => {
     setIsLoading(true);
     try {
-      const newUser = await mockLoginUser(email, username);
+      const newUser = await loginUser(email, username);
       setUser(newUser);
-      localStorage.setItem('tron-user', JSON.stringify(newUser));
+      localStorage.setItem("tron-user", JSON.stringify(newUser));
     } catch (error) {
-      console.error('Login failed', error);
+      console.error("Login failed", error);
     } finally {
       setIsLoading(false);
     }
