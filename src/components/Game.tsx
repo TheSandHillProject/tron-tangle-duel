@@ -39,6 +39,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   const [isSetup, setIsSetup] = useState<boolean>(true);
   const [needsLogin, setNeedsLogin] = useState<boolean>(false);
   const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
+  const [isScoreSubmitting, setIsScoreSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -116,9 +117,12 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       user && 
       gameMode === 'single' && 
       bulletsCollected > 0 &&
-      lastSubmittedScore !== bulletsCollected * speedMultiplier
+      lastSubmittedScore !== bulletsCollected * speedMultiplier &&
+      !isScoreSubmitting
     ) {
       const finalScore = bulletsCollected * speedMultiplier;
+      
+      setIsScoreSubmitting(true);
       
       submitScore(user.id, user.username, finalScore)
         .then(() => {
@@ -126,15 +130,17 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             description: `Your score of ${finalScore} has been recorded!`
           });
           setLastSubmittedScore(finalScore);
+          setIsScoreSubmitting(false);
         })
         .catch(error => {
           console.error("Failed to submit score:", error);
           toast.error("Score Submission Failed", {
             description: "There was an error recording your score."
           });
+          setIsScoreSubmitting(false);
         });
     }
-  }, [gameState.isGameOver, user, gameMode, bulletsCollected, speedMultiplier, lastSubmittedScore]);
+  }, [gameState.isGameOver, user, gameMode, bulletsCollected, speedMultiplier, lastSubmittedScore, isScoreSubmitting]);
 
   const [contactDialogOpen, setContactDialogOpen] = useState<boolean>(false);
 
