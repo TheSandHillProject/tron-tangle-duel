@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Button } from './ui/button';
+import { HelpCircle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 interface GameInstructionsProps {
@@ -19,6 +19,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
             size="sm" 
             className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors h-9"
           >
+            <HelpCircle className="h-4 w-4" />
             How to Play
           </Button>
         </AlertDialogTrigger>
