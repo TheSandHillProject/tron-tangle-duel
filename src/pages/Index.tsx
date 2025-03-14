@@ -6,11 +6,14 @@ import { useUserContext } from '@/context/UserContext';
 import LoginPrompt from '@/components/LoginPrompt';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import GameInstructions from '@/components/GameInstructions';
+import FeedbackDialog from '@/components/FeedbackDialog';
 
 const Index = () => {
   const { setNavigatingFrom, setSkipSetup } = useGameContext();
   const { user, isLoading, logout } = useUserContext();
   const [showLogin, setShowLogin] = useState(false);
+  const [gameMode, setGameMode] = useState<'single' | 'two'>('single');
   
   const handleNavigate = () => {
     setNavigatingFrom('/');
@@ -95,9 +98,13 @@ const Index = () => {
           </>
         )}
 
-        {/* Game instructions */}
+        {/* Game instructions with How to Play and Feedback buttons */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          <h3 className="font-medium mb-2 text-tron-text text-center">How to Play</h3>
+          <div className="flex justify-between items-center mb-2">
+            <GameInstructions gameMode={gameMode} />
+            <h3 className="font-medium text-tron-text">How to Play</h3>
+            <FeedbackDialog />
+          </div>
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-tron-blue font-medium mb-1">Player 1</p>
