@@ -17,7 +17,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock API functions (these would connect to your backend)
+// ---- API Calls ----
 const mockLoginUser = async (email: string, username: string): Promise<User> => {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -59,6 +59,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setIsLoading(false);
   }, []);
+
+
 
   // Update lastSeen periodically when logged in
   useEffect(() => {
