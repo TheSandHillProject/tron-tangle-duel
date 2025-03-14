@@ -20,9 +20,9 @@ const FeedbackDialog = () => {
         <Button 
           variant="outline" 
           size="sm"
-          className="bg-transparent border border-tron-blue/50 text-tron-blue hover:bg-tron-blue/10 px-4"
+          className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
         >
-          <Mail className="h-4 w-4 mr-2" />
+          <Mail className="h-4 w-4" />
           Feedback
         </Button>
       </AlertDialogTrigger>
