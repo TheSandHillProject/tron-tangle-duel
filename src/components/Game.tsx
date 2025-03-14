@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -247,7 +248,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             )}
           </div>
           
-          <div className="flex justify-center gap-2 mt-3">
+          <div className="flex justify-center gap-4 mt-3">
             <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
               <AlertDialogTrigger asChild>
                 <Button 
