@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { HelpCircle } from 'lucide-react';
@@ -18,7 +17,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
+            className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors h-9"
           >
             <HelpCircle className="h-4 w-4" />
             How to Play

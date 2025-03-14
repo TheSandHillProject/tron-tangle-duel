@@ -20,7 +20,7 @@ const FeedbackDialog = () => {
         <Button 
           variant="outline" 
           size="sm"
-          className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
+          className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors h-9"
         >
           <Mail className="h-4 w-4" />
           Feedback
@@ -32,7 +32,8 @@ const FeedbackDialog = () => {
           <AlertDialogDescription className="text-tron-text">
             For feedback, reporting bugs, or questions related to Battle Tron, you can reach us at:
             <div className="mt-4 text-tron-blue font-medium">
-              mail@nicpavao.com
+              email: mail@nicpavao.com<br />
+              twitter: @BattleTronGram
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
