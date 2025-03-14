@@ -62,7 +62,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!token) return;
   
     try {
-      const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/users", {
+      const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/user", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
