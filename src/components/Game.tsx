@@ -274,7 +274,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         
         <FeedbackDialog />
       </div>
-      
+
+      <div className="flex justify-between items-center w-full mb-4">
+        <GameInstructions gameMode={gameMode} />
+        <FeedbackDialog />
+      </div>
       <div className="relative">
         <GameOverlay
           gameState={gameState}
