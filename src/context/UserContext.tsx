@@ -17,42 +17,45 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // ---- API Calls ----
-const loginUser = async (email: string, username: string): Promise<User> => {
-  try {
-    const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, name: username }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Login failed");
-    }
-
-    const data = await response.json();
-    const token = data.token;
-
-    // Store JWT in localStorage
-    localStorage.setItem("tron-token", token);
-
-    return {
-      id: email, // We don't get a user ID from the backend yet, so use email
-      email,
-      username,
-      lastSeen: new Date(),
-    };
-  } catch (error) {
-    console.error("Login request failed", error);
-    throw error;
-  }
-};
-
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const login = async (email: string, username: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("https://battletron-backend-199102ffa310.herokuapp.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name: username }),
+      });
+  
+      if (!response.ok) throw new Error("Login failed");
+  
+      const data = await response.json();
+  
+      // Store JWT token
+      localStorage.setItem("tron-token", data.token);
+  
+      // Save user state
+      const newUser = {
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.name,
+        lastSeen: new Date(data.user.last_seen),
+      };
+  
+      setUser(newUser);
+      localStorage.setItem("tron-user", JSON.stringify(newUser));
+  
+      console.log("Login successful");
+    } catch (error) {
+      console.error("Login failed:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateLastSeen = async () => {
     const token = localStorage.getItem("tron-token");
@@ -105,7 +108,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Update lastSeen when user first logs in
     updateLastSeen();
 
-    
     // Then update periodically
     const interval = setInterval(() => {
       updateLastSeen();
@@ -119,21 +121,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [user]);
 
-  const login = async (email: string, username: string) => {
-    setIsLoading(true);
-    try {
-      const newUser = await loginUser(email, username);
-      setUser(newUser);
-      localStorage.setItem("tron-user", JSON.stringify(newUser));
-    } catch (error) {
-      console.error("Login failed", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const logout = () => {
     localStorage.removeItem('tron-user');
+    localStorage.removeItem('tron-token');
     setUser(null);
   };
 
