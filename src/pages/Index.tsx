@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import GameInstructions from '@/components/GameInstructions';
 import FeedbackDialog from '@/components/FeedbackDialog';
+import { Separator } from '@/components/ui/separator';
 
 const Index = () => {
   const { setNavigatingFrom, setSkipSetup } = useGameContext();
@@ -98,11 +99,21 @@ const Index = () => {
           </>
         )}
 
-        {/* Game instructions with How to Play and Feedback buttons */}
+        {/* Game instructions with How to Play and Feedback buttons at the top */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          <div className="flex justify-center items-center mb-2">
+          {/* Buttons at the top */}
+          <div className="flex justify-between items-center mb-2">
+            <GameInstructions gameMode={gameMode} />
+            <FeedbackDialog />
+          </div>
+          
+          {/* Separator under the buttons */}
+          <Separator className="my-2 bg-tron-text/10" />
+          
+          <div className="flex justify-center items-center my-2">
             <h3 className="font-medium text-tron-text">Game Controls</h3>
           </div>
+          
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-tron-blue font-medium mb-1">Player 1</p>
@@ -129,12 +140,6 @@ const Index = () => {
               <p className="mb-1">Space - Pause/Resume</p>
               <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
               <p>Use bullets to cut your opponent's trail or your own trail.</p>
-            </div>
-            
-            {/* Added divider and buttons below */}
-            <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10 flex justify-between">
-              <GameInstructions gameMode={gameMode} />
-              <FeedbackDialog />
             </div>
           </div>
         </div>
