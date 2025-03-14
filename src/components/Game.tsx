@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -208,103 +207,103 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         />
       </div>
       
-      <div className="flex justify-center items-center mb-4 w-full max-w-[calc(100vh-4rem)]">
-        <div className="flex flex-col items-center">
-          {gameMode === 'single' ? (
-            <>
-              <PlayerScore 
-                playerName="Player 1" 
-                score={bulletsCollected * speedMultiplier} 
-                color="blue"
-                label="Score" 
-              />
-              <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
-                High Score: {highScore}
-              </div>
-            </>
-          ) : (
-            <PlayerScore 
-              playerName="Player 1" 
-              score={gameState.players[0]?.score || 0} 
-              color="blue" 
-            />
-          )}
-          <div className="flex gap-2 mt-1">
-            <div className={`${gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' ? 
-              (gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') : 
-              'bg-tron-blue/10 text-tron-blue'} px-2 py-1 rounded text-xs`}>
-              Bullets: {gameState.players[0]?.bullets || 0}{gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' && 
-                ` / ${STABILITY_THRESHOLD} ${gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? '(Stable)' : '(Unstable)'}`}
-            </div>
-            {gameMode === 'single' && (
+      <div className="flex justify-between items-center w-full mb-4">
+        <GameInstructions gameMode={gameMode} />
+        
+        <div className="flex justify-center items-center gap-12">
+          <div className="flex flex-col items-center">
+            {gameMode === 'single' ? (
               <>
-                <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                  NeuTrons: {gameState.players[0]?.neutronBombs || 0}
-                </div>
-                <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                  HydroTrons: {gameState.players[0]?.hydroTronsCollected || 0}
+                <PlayerScore 
+                  playerName="Player 1" 
+                  score={bulletsCollected * speedMultiplier} 
+                  color="blue"
+                  label="Score" 
+                />
+                <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
+                  High Score: {highScore}
                 </div>
               </>
+            ) : (
+              <PlayerScore 
+                playerName="Player 1" 
+                score={gameState.players[0]?.score || 0} 
+                color="blue" 
+              />
             )}
+            <div className="flex gap-2 mt-1">
+              <div className={`${gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' ? 
+                (gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') : 
+                'bg-tron-blue/10 text-tron-blue'} px-2 py-1 rounded text-xs`}>
+                Bullets: {gameState.players[0]?.bullets || 0}{gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' && 
+                  ` / ${STABILITY_THRESHOLD} ${gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? '(Stable)' : '(Unstable)'}`}
+              </div>
+              {gameMode === 'single' && (
+                <>
+                  <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                    NeuTrons: {gameState.players[0]?.neutronBombs || 0}
+                  </div>
+                  <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
+                    HydroTrons: {gameState.players[0]?.hydroTronsCollected || 0}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           
-          <div className="flex justify-center gap-4 mt-3">
-            <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
-                >
-                  Contact
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-tron-dark max-w-lg">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-tron-blue font-space">
-                    Contact Information
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="space-y-4 text-tron-text">
-                    <p>
-                      For questions, feedback, or support related to Battle Tron, you can reach us at:
-                    </p>
-                    <div className="bg-black/30 p-4 rounded-md">
-                      <p className="text-tron-blue">Email: contact@battletron.com</p>
-                      <p className="text-tron-blue mt-2">Twitter: @BattleTronGame</p>
-                    </div>
-                    <p className="text-sm text-tron-text/70">
-                      We typically respond within 24-48 hours. Thank you for playing Battle Tron!
-                    </p>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogAction className="bg-tron-blue hover:bg-tron-blue/80">Close</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            
-            <GameInstructions gameMode={gameMode} />
-          </div>
+          {gameMode === 'two' && (
+            <>
+              <div className="text-center">
+                <div className="text-xs text-tron-text/60 font-medium mb-1">VS</div>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <PlayerScore 
+                  playerName="Player 2" 
+                  score={gameState.players[1]?.score || 0} 
+                  color="orange" 
+                />
+                <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
+                  Bullets: {gameState.players[1]?.bullets || 0}
+                </div>
+              </div>
+            </>
+          )}
         </div>
         
-        {gameMode === 'two' && (
-          <>
-            <div className="text-center mx-12">
-              <div className="text-xs text-tron-text/60 font-medium mb-1">VS</div>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <PlayerScore 
-                playerName="Player 2" 
-                score={gameState.players[1]?.score || 0} 
-                color="orange" 
-              />
-              <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
-                Bullets: {gameState.players[1]?.bullets || 0}
-              </div>
-            </div>
-          </>
-        )}
+        <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
+            >
+              Contact
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-tron-dark max-w-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-tron-blue font-space">
+                Contact Information
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-4 text-tron-text">
+                <p>
+                  For questions, feedback, or support related to Battle Tron, you can reach us at:
+                </p>
+                <div className="bg-black/30 p-4 rounded-md">
+                  <p className="text-tron-blue">Email: contact@battletron.com</p>
+                  <p className="text-tron-blue mt-2">Twitter: @BattleTronGame</p>
+                </div>
+                <p className="text-sm text-tron-text/70">
+                  We typically respond within 24-48 hours. Thank you for playing Battle Tron!
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction className="bg-tron-blue hover:bg-tron-blue/80">Close</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       
       <div className="relative">
