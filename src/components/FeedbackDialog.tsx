@@ -17,13 +17,13 @@ const FeedbackDialog = () => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors h-9"
-        >
-          <Mail className="h-4 w-4" />
-          Feedback
+      <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors h-9"
+          >
+            <Mail className="h-4 w-4" />
+            Feedback
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="glass-panel border-tron-blue/50 bg-tron-background/70">
