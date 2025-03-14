@@ -100,7 +100,7 @@ const Index = () => {
 
         {/* Game instructions with How to Play and Feedback buttons */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-center items-center mb-2">
             <h3 className="font-medium text-tron-text">Game Controls</h3>
           </div>
           <div className="grid grid-cols-2 gap-4 text-center">
