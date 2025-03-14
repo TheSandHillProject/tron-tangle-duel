@@ -101,9 +101,7 @@ const Index = () => {
         {/* Game instructions with How to Play and Feedback buttons */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
           <div className="flex justify-between items-center mb-2">
-            <GameInstructions gameMode={gameMode} />
             <h3 className="font-medium text-tron-text">Game Controls</h3>
-            <FeedbackDialog />
           </div>
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
@@ -126,6 +124,9 @@ const Index = () => {
                 <li>→ - Move Right</li>
                 <li>/ - Shoot Bullet</li>
               </ul>
+            </div>
+            <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10">
+            <GameInstructions gameMode={gameMode} /><FeedbackDialog />
             </div>
             <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10">
               <p className="mb-1">Space - Pause/Resume</p>
