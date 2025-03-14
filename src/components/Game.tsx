@@ -247,9 +247,7 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             )}
           </div>
           
-          <div className="flex gap-2 mt-3">
-            <GameInstructions gameMode={gameMode} />
-            
+          <div className="flex justify-center gap-2 mt-3">
             <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
               <AlertDialogTrigger asChild>
                 <Button 
@@ -283,6 +281,8 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+            
+            <GameInstructions gameMode={gameMode} />
           </div>
         </div>
         
