@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -10,7 +11,7 @@ interface User {
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, username: string) => void;
+  login: (email: string, username: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -35,11 +36,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
       if (!response.ok) {
         if (data.message === "There is a different username associated with this account email") {
-          alert("Error: The email you entered is linked to a different username.");
+          toast.error("Login Error", {
+            description: `The email "${email}" is already linked to a different username. Please use your correct username.`
+          });
         } else if (data.message === "There is a different email associated with this account username") {
-          alert("Error: The username you entered is linked to a different email.");
+          toast.error("Login Error", {
+            description: `The username "${username}" is already linked to a different email. Please use your correct email.`
+          });
         } else {
-          alert("Login failed. Please check your credentials.");
+          toast.error("Login Failed", {
+            description: "Please check your credentials and try again."
+          });
         }
         throw new Error(data.message);
       }
@@ -57,16 +64,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
       setUser(newUser);
       localStorage.setItem("tron-user", JSON.stringify(newUser));
+      
+      toast.success("Login Successful", {
+        description: `Welcome back, ${newUser.username}!`
+      });
   
       console.log("Login successful");
     } catch (error) {
       console.error("Login failed:", error.message);
+      // Don't show toast here as we already handled specific error cases above
     } finally {
       setIsLoading(false);
     }
   };
   
-
   const updateLastSeen = async () => {
     const token = localStorage.getItem("tron-token");
     if (!token) return;
@@ -109,7 +120,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-// ---- API user effects ----
+  // ---- API user effects ----
 
   // Update lastSeen periodically when logged in
   useEffect(() => {
@@ -135,6 +146,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('tron-user');
     localStorage.removeItem('tron-token');
     setUser(null);
+    toast.info("Logged Out", {
+      description: "You have been successfully logged out."
+    });
   };
 
   return (
