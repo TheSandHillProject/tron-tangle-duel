@@ -209,8 +209,10 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       </div>
       
       <div className="flex justify-between items-center w-full mb-4">
-        <GameInstructions gameMode={gameMode} />
-        
+        <div>
+        <GameInstructions gameMode={gameMode} /> <br />
+        <FeedbackDialog />
+        </div>
         <div className="flex justify-center items-center gap-12">
           <div className="flex flex-col items-center">
             {gameMode === 'single' ? (
@@ -271,8 +273,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
             </>
           )}
         </div>
-        
-        <FeedbackDialog />
       </div>
       <div className="relative">
         <GameOverlay
