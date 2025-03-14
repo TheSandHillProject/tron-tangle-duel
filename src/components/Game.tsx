@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PlayerScore from './PlayerScore';
@@ -208,11 +209,11 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       </div>
       
       <div className="flex justify-between items-center w-full max-w-[calc(100vh-4rem)] mb-4">
-        <div>
+        <div className="flex-none">
           <GameInstructions gameMode={gameMode} />
         </div>
         
-        <div className="flex justify-center items-center gap-12">
+        <div className="flex justify-center items-center gap-12 flex-grow">
           <div className="flex flex-col items-center">
             {gameMode === 'single' ? (
               <>
@@ -273,39 +274,41 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
           )}
         </div>
         
-        <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
-            >
-              Contact
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="bg-tron-dark max-w-lg">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-tron-blue font-space">
-                Contact Information
-              </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-4 text-tron-text">
-                <p>
-                  For questions, feedback, or support related to Battle Tron, you can reach us at:
-                </p>
-                <div className="bg-black/30 p-4 rounded-md">
-                  <p className="text-tron-blue">Email: contact@battletron.com</p>
-                  <p className="text-tron-blue mt-2">Twitter: @BattleTronGame</p>
-                </div>
-                <p className="text-sm text-tron-text/70">
-                  We typically respond within 24-48 hours. Thank you for playing Battle Tron!
-                </p>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction className="bg-tron-blue hover:bg-tron-blue/80">Close</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex-none">
+          <AlertDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs gap-2 bg-gray-500/20 text-tron-text/70 border-gray-500/30 hover:bg-gray-500/30 hover:text-tron-text transition-colors"
+              >
+                Contact
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-tron-dark max-w-lg">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-tron-blue font-space">
+                  Contact Information
+                </AlertDialogTitle>
+                <AlertDialogDescription className="space-y-4 text-tron-text">
+                  <p>
+                    For questions, feedback, or support related to Battle Tron, you can reach us at:
+                  </p>
+                  <div className="bg-black/30 p-4 rounded-md">
+                    <p className="text-tron-blue">Email: contact@battletron.com</p>
+                    <p className="text-tron-blue mt-2">Twitter: @BattleTronGame</p>
+                  </div>
+                  <p className="text-sm text-tron-text/70">
+                    We typically respond within 24-48 hours. Thank you for playing Battle Tron!
+                  </p>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogAction className="bg-tron-blue hover:bg-tron-blue/80">Close</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
       
       <div className="relative">
