@@ -99,17 +99,8 @@ const Index = () => {
           </>
         )}
 
-        {/* Game instructions with How to Play and Feedback buttons */}
+        {/* Game controls card */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          {/* How to Play and Feedback at top */}
-          <div className="flex justify-center items-center gap-4 mb-2">
-            <GameInstructions gameMode={gameMode} />
-            <FeedbackDialog />
-          </div>
-          
-          {/* Separator */}
-          <div className="border-t border-tron-text/10 my-2"></div>
-          
           {/* Game Controls title */}
           <div className="flex justify-center items-center mb-2">
             <h3 className="font-medium text-tron-text text-center">Game Controls</h3>
@@ -142,6 +133,15 @@ const Index = () => {
               <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
               <p>Use bullets to cut your opponent's trail or your own trail.</p>
             </div>
+          </div>
+          
+          {/* Separator */}
+          <div className="border-t border-tron-text/10 my-2"></div>
+          
+          {/* How to Play and Feedback at bottom */}
+          <div className="flex justify-center items-center gap-4 mt-2">
+            <GameInstructions gameMode={gameMode} />
+            <FeedbackDialog />
           </div>
         </div>
       </div>
