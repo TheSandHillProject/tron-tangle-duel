@@ -13,7 +13,7 @@ import { useGameContext } from '@/context/GameContext';
 import { useUserContext } from '@/context/UserContext';
 import { submitScore } from '@/services/leaderboardService';
 import LoginPrompt from './LoginPrompt';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { STABILITY_THRESHOLD } from '@/utils/gameUtils';
 import { Button } from './ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -122,20 +122,15 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       
       submitScore(user.id, user.username, finalScore)
         .then(() => {
-          toast({
-            title: "Score Submitted",
-            description: `Your score of ${finalScore} has been recorded!`,
-            duration: 3000
+          toast.success("Score Submitted", {
+            description: `Your score of ${finalScore} has been recorded!`
           });
           setLastSubmittedScore(finalScore);
         })
         .catch(error => {
           console.error("Failed to submit score:", error);
-          toast({
-            title: "Score Submission Failed",
-            description: "There was an error recording your score.",
-            variant: "destructive",
-            duration: 3000
+          toast.error("Score Submission Failed", {
+            description: "There was an error recording your score."
           });
         });
     }
