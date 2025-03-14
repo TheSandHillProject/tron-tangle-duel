@@ -60,7 +60,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-
+// ---- API user effects ----
 
   // Update lastSeen periodically when logged in
   useEffect(() => {
