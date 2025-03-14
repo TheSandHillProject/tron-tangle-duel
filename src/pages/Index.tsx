@@ -21,7 +21,8 @@ const Index = () => {
   };
   
   // Show login screen if not logged in and button clicked
-  const handleGameButtonClick = () => {
+  const handleGameButtonClick = (mode: 'single' | 'two') => {
+    setGameMode(mode);
     if (!user && !showLogin) {
       setShowLogin(true);
       return false; // Prevent navigation
@@ -51,7 +52,7 @@ const Index = () => {
         </h1>
         
         {showLogin && !user ? (
-          <LoginPrompt onComplete={() => setShowLogin(false)} />
+          <LoginPrompt onComplete={() => setShowLogin(false)} gameMode={gameMode} />
         ) : (
           <>
             {user && (
@@ -73,7 +74,7 @@ const Index = () => {
                 to="/game/single" 
                 className="px-10 py-5 rounded-lg border-2 border-tron-blue text-tron-blue hover:bg-tron-blue/20 
                 shadow-neon-blue transition-all duration-300 font-medium font-space text-xl"
-                onClick={(e) => !handleGameButtonClick() && e.preventDefault()}
+                onClick={(e) => !handleGameButtonClick('single') && e.preventDefault()}
               >
                 SINGLE PLAYER
               </Link>
@@ -82,7 +83,7 @@ const Index = () => {
                 to="/game/two" 
                 className="px-10 py-5 rounded-lg border-2 border-tron-orange text-tron-orange hover:bg-tron-orange/20
                 shadow-neon-orange transition-all duration-300 font-medium font-space text-xl"
-                onClick={(e) => !handleGameButtonClick() && e.preventDefault()}
+                onClick={(e) => !handleGameButtonClick('two') && e.preventDefault()}
               >
                 TWO PLAYERS
               </Link>
@@ -100,9 +101,20 @@ const Index = () => {
 
         {/* Game instructions with How to Play and Feedback buttons */}
         <div className="mt-12 glass-panel rounded-xl p-4 text-sm text-tron-text/80 max-w-md animate-game-fade-in">
-          <div className="flex justify-center items-center mb-2">
-            <h3 className="font-medium text-tron-text">Game Controls</h3>
+          {/* How to Play and Feedback at top */}
+          <div className="flex justify-center items-center gap-4 mb-2">
+            <GameInstructions gameMode={gameMode} />
+            <FeedbackDialog />
           </div>
+          
+          {/* Separator */}
+          <div className="border-t border-tron-text/10 my-2"></div>
+          
+          {/* Game Controls title */}
+          <div className="flex justify-center items-center mb-2">
+            <h3 className="font-medium text-tron-text text-center">Game Controls</h3>
+          </div>
+          
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-tron-blue font-medium mb-1">Player 1</p>
@@ -129,12 +141,6 @@ const Index = () => {
               <p className="mb-1">Space - Pause/Resume</p>
               <p className="text-yellow-300 font-medium">Collect yellow tokens to get bullets!</p>
               <p>Use bullets to cut your opponent's trail or your own trail.</p>
-            </div>
-            
-            {/* Added divider and buttons below */}
-            <div className="col-span-2 mt-2 pt-2 border-t border-tron-text/10 flex justify-between">
-              <GameInstructions gameMode={gameMode} />
-              <FeedbackDialog />
             </div>
           </div>
         </div>

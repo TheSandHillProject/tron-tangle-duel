@@ -4,17 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
 import { Toaster } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useGameContext } from '@/context/GameContext';
 
 interface LoginPromptProps {
   onComplete?: () => void;
+  gameMode?: 'single' | 'two';
 }
 
-const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
+const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete, gameMode = 'single' }) => {
   const { login } = useUserContext();
+  const { setNavigatingFrom } = useGameContext();
   const [email, setEmail] = useState('');
   const [screenName, setScreenName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +46,10 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
     try {
       await login(email.trim(), screenName.trim());
       if (onComplete) onComplete();
+      
+      // Navigate to game setup after successful login
+      setNavigatingFrom('/');
+      navigate(`/game/${gameMode}`);
     } catch (err) {
       // Don't set generic error here since we're showing toast notifications
       // Error messages from the backend are displayed via toast in the UserContext
