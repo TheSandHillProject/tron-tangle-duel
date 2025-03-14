@@ -33,7 +33,7 @@ const FeedbackDialog = () => {
             For feedback, reporting bugs, or questions related to Battle Tron, you can reach us at:
             <div className="mt-4 text-tron-blue font-medium">
               email: mail@nicpavao.com<br />
-              twitter: @BattleTronGame
+              x.com: @BattleTronGame
             </div>
             Thank you for making Battle Tron better!
           </AlertDialogDescription>
