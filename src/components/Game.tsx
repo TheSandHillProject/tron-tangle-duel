@@ -1,21 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import PlayerScore from './PlayerScore';
+import { useNavigate } from 'react-router-dom';
 import GameControls from './GameControls';
-import GameModeSelector from './GameModeSelector';
-import GameSetup from './GameSetup';
-import GameCanvas from './GameCanvas';
-import GameOverlay from './GameOverlay';
-import GameInstructions from './GameInstructions';
-import FeedbackDialog from './FeedbackDialog';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useGameContext } from '@/context/GameContext';
 import { useUserContext } from '@/context/UserContext';
 import { submitScore } from '@/services/leaderboardService';
-import LoginPrompt from './LoginPrompt';
-import { STABILITY_THRESHOLD } from '@/utils/gameUtils';
-import { Button } from './ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import GameContainer from './GameContainer';
+import GameHeader from './GameHeader';
+import GameScore from './GameScore';
+import GameMain from './GameMain';
 
 interface GameProps {
   initialGameMode?: 'single' | 'two';
@@ -27,7 +21,7 @@ const DEFAULT_GRID_HEIGHT = 50;
 
 const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChange }) => {
   const { skipSetup, setSkipSetup, setLastGameMode, navigatingFrom, setNavigatingFrom, savedFPS, setSavedFPS } = useGameContext();
-  const { user, isLoading: isUserLoading } = useUserContext();
+  const { user } = useUserContext();
   const navigate = useNavigate();
   
   const [gameMode, setGameMode] = useState<'single' | 'two'>(initialGameMode);
@@ -36,17 +30,8 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
   const [gridHeight, setGridHeight] = useState<number>(DEFAULT_GRID_HEIGHT);
   const [framesPerSecond, setFramesPerSecond] = useState<number>(savedFPS);
   const [isSetup, setIsSetup] = useState<boolean>(true);
-  const [needsLogin, setNeedsLogin] = useState<boolean>(false);
   const [lastSubmittedScore, setLastSubmittedScore] = useState<number | null>(null);
   const [isScoreSubmitting, setIsScoreSubmitting] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      setNeedsLogin(true);
-    } else {
-      setNeedsLogin(false);
-    }
-  }, [user, isUserLoading]);
 
   useEffect(() => {
     if (navigatingFrom === '/') {
@@ -125,186 +110,70 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
       
       submitScore(user.id, user.username, finalScore)
         .then(() => {
-          // Toast notification removed
           setLastSubmittedScore(finalScore);
           setIsScoreSubmitting(false);
         })
         .catch(error => {
           console.error("Failed to submit score:", error);
-          // Toast error notification removed
           setIsScoreSubmitting(false);
         });
     }
   }, [gameState.isGameOver, user, gameMode, bulletsCollected, speedMultiplier, lastSubmittedScore, isScoreSubmitting]);
 
-  const [contactDialogOpen, setContactDialogOpen] = useState<boolean>(false);
-
-  if (needsLogin) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4">
-        <div className="w-full max-w-4xl">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space text-center mb-8">
-            BATTLE TRON
-          </h1>
-          <LoginPrompt onComplete={() => setNeedsLogin(false)} />
-          <div className="mt-8 text-center">
-            <Link 
-              to="/"
-              className="text-gray-400/80 hover:text-gray-300 transition-colors font-medium"
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isSetup) {
-    return (
-      <div className="flex flex-col items-center">
-        <div className="mb-2 text-center animate-game-fade-in">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
-            BATTLE TRON
-          </h1>
-        </div>
-        
-        <div className="flex items-center mb-4">
-          <GameModeSelector 
-            gameMode={gameMode} 
-            onGameModeChange={handleGameModeChange} 
-          />
-        </div>
-        
-        <GameSetup 
-          onSetupComplete={applyGameSetup}
-          initialGridWidth={gridWidth}
-          initialGridHeight={gridHeight}
-          initialFPS={framesPerSecond}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col items-center">
-      <div className="mb-2 text-center animate-game-fade-in">
-        <div className="text-xs font-medium text-tron-text/60 tracking-widest uppercase mb-1">
-          Round {gameState.round}
-        </div>
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-tron-blue to-tron-glow font-space">
-          BATTLE TRON
-        </h1>
-      </div>
-      
-      <div className="flex items-center mb-4">
-        <GameModeSelector 
+    <GameContainer
+      gameMode={gameMode}
+      onGameModeChange={handleGameModeChange}
+      isSetup={isSetup}
+      onSetupComplete={applyGameSetup}
+      gridWidth={gridWidth}
+      gridHeight={gridHeight}
+      framesPerSecond={framesPerSecond}
+    >
+      <div className="flex flex-col items-center">
+        <GameHeader 
           gameMode={gameMode} 
           onGameModeChange={handleGameModeChange} 
+          round={gameState.round} 
         />
-      </div>
-      
-      <div className="flex justify-between items-center w-full mb-4">
-        <GameInstructions gameMode={gameMode} />
         
-        <div className="flex justify-center items-center gap-12">
-          <div className="flex flex-col items-center">
-            {gameMode === 'single' ? (
-              <>
-                <PlayerScore 
-                  playerName="Player 1" 
-                  score={bulletsCollected * speedMultiplier} 
-                  color="blue"
-                  label="Score" 
-                />
-                <div className="mt-1 bg-tron-blue/10 px-3 py-1 rounded text-xs text-tron-blue">
-                  High Score: {highScore}
-                </div>
-              </>
-            ) : (
-              <PlayerScore 
-                playerName="Player 1" 
-                score={gameState.players[0]?.score || 0} 
-                color="blue" 
-              />
-            )}
-            <div className="flex gap-2 mt-1">
-              <div className={`${gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' ? 
-                (gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') : 
-                'bg-tron-blue/10 text-tron-blue'} px-2 py-1 rounded text-xs`}>
-                Bullets: {gameState.players[0]?.bullets || 0}{gameState.gravitron && !gameState.gravitron.collected && gameMode === 'single' && 
-                  ` / ${STABILITY_THRESHOLD} ${gameState.players[0]?.bullets >= STABILITY_THRESHOLD ? '(Stable)' : '(Unstable)'}`}
-              </div>
-              {gameMode === 'single' && (
-                <>
-                  <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                    NeuTrons: {gameState.players[0]?.neutronBombs || 0}
-                  </div>
-                  <div className="bg-tron-blue/10 px-2 py-1 rounded text-xs text-tron-blue">
-                    HydroTrons: {gameState.players[0]?.hydroTronsCollected || 0}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          
-          {gameMode === 'two' && (
-            <>
-              <div className="text-center">
-                <div className="text-xs text-tron-text/60 font-medium mb-1">VS</div>
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <PlayerScore 
-                  playerName="Player 2" 
-                  score={gameState.players[1]?.score || 0} 
-                  color="orange" 
-                />
-                <div className="mt-1 bg-tron-orange/10 px-2 py-1 rounded text-xs text-tron-orange">
-                  Bullets: {gameState.players[1]?.bullets || 0}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <GameScore 
+          players={gameState.players}
+          gameMode={gameMode}
+          bulletsCollected={bulletsCollected}
+          highScore={highScore}
+          gravitron={!!gameState.gravitron}
+          gravitronCollected={gameState.gravitron?.collected || false}
+        />
         
-        <FeedbackDialog />
-      </div>
-      <div className="relative">
-        <GameOverlay
+        <GameMain 
           gameState={gameState}
           gameMode={gameMode}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
           bulletsCollected={bulletsCollected}
           highScore={highScore}
           onResetRound={handleResetRound}
           onResumeGame={handleResumeGame}
         />
         
-        <div className="glass-panel rounded-xl p-2 overflow-hidden animate-game-fade-in">
-          <GameCanvas 
-            gameState={gameState}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-          />
-        </div>
+        <GameControls 
+          isGameOver={gameState.isGameOver}
+          isGamePaused={gameState.isGamePaused}
+          onStartNewGame={() => {
+            if (handleStartNewGame()) {
+              setIsSetup(true);
+            }
+          }}
+          onResetRound={handleResetRound}
+          onPauseGame={handlePauseGame}
+          onResumeGame={handleResumeGame}
+          gameMode={gameMode}
+          canDeployNeutronBomb={gameMode === 'single' && (gameState.players[0]?.neutronBombs > 0 || false)}
+          onDeployNeutronBomb={handleDeployNeutronBomb}
+        />
       </div>
-      
-      <GameControls 
-        isGameOver={gameState.isGameOver}
-        isGamePaused={gameState.isGamePaused}
-        onStartNewGame={() => {
-          if (handleStartNewGame()) {
-            setIsSetup(true);
-          }
-        }}
-        onResetRound={handleResetRound}
-        onPauseGame={handlePauseGame}
-        onResumeGame={handleResumeGame}
-        gameMode={gameMode}
-        canDeployNeutronBomb={gameMode === 'single' && (gameState.players[0]?.neutronBombs > 0 || false)}
-        onDeployNeutronBomb={handleDeployNeutronBomb}
-      />
-    </div>
+    </GameContainer>
   );
 };
 
