@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
-import { Loader2 } from 'lucide-react';
 
 interface LoginPromptProps {
   onComplete?: () => void;
@@ -39,15 +38,10 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
     setError(null);
     
     try {
-      const success = await login(email.trim(), screenName.trim());
-      if (success && onComplete) {
-        onComplete();
-      } else if (!success) {
-        // If login returned false but didn't throw an error
-        setError('Login failed. Please check your details and try again.');
-      }
+      await login(email.trim(), screenName.trim());
+      if (onComplete) onComplete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to log in. Please try again.');
+      setError('Failed to log in. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,14 +91,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
           className="w-full bg-tron-blue/20 text-tron-blue hover:bg-tron-blue/30 border border-tron-blue/50"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            'Enter The Grid'
-          )}
+          {isSubmitting ? 'Connecting...' : 'Enter The Grid'}
         </Button>
         
         <p className="text-xs text-center text-tron-text/60 mt-4">
@@ -116,4 +103,3 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onComplete }) => {
 };
 
 export default LoginPrompt;
-

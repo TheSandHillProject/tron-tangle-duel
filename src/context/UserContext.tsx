@@ -1,6 +1,4 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { toast } from '@/components/ui/use-toast';
 
 interface User {
   id: string;
@@ -12,7 +10,7 @@ interface User {
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, username: string) => Promise<boolean>;
+  login: (email: string, username: string) => void;
   logout: () => void;
 }
 
@@ -27,13 +25,10 @@ const loginUser = async (email: string, username: string): Promise<User> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, name: username }),
-      // Add timeout and credentials
-      credentials: 'omit',
-      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
 
     if (!response.ok) {
-      throw new Error(`Login failed with status: ${response.status}`);
+      throw new Error("Login failed");
     }
 
     const data = await response.json();
@@ -50,15 +45,7 @@ const loginUser = async (email: string, username: string): Promise<User> => {
     };
   } catch (error) {
     console.error("Login request failed", error);
-    
-    // Provide more specific error messages
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error("Cannot connect to server. Please check your internet connection.");
-    } else if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error("An unknown error occurred during login");
-    }
+    throw error;
   }
 };
 
@@ -132,29 +119,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [user]);
 
-  const login = async (email: string, username: string): Promise<boolean> => {
+  const login = async (email: string, username: string) => {
     setIsLoading(true);
     try {
       const newUser = await loginUser(email, username);
       setUser(newUser);
       localStorage.setItem("tron-user", JSON.stringify(newUser));
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${username}!`,
-      });
-      return true;
     } catch (error) {
-      let errorMessage = "Login failed. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
       console.error("Login failed", error);
-      toast({
-        title: "Login Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return false;
     } finally {
       setIsLoading(false);
     }
@@ -162,12 +134,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('tron-user');
-    localStorage.removeItem('tron-token');
     setUser(null);
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully.",
-    });
   };
 
   return (
@@ -184,4 +151,3 @@ export const useUserContext = () => {
   }
   return context;
 };
-
