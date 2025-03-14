@@ -31,9 +31,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ email, name: username }),
       });
   
-      if (!response.ok) throw new Error("Login failed");
-  
       const data = await response.json();
+  
+      if (!response.ok) {
+        if (data.message === "There is a different username associated with this account email") {
+          alert("Error: The email you entered is linked to a different username.");
+        } else if (data.message === "There is a different email associated with this account username") {
+          alert("Error: The username you entered is linked to a different email.");
+        } else {
+          alert("Login failed. Please check your credentials.");
+        }
+        throw new Error(data.message);
+      }
   
       // Store JWT token
       localStorage.setItem("tron-token", data.token);
@@ -56,6 +65,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
+  
 
   const updateLastSeen = async () => {
     const token = localStorage.getItem("tron-token");
