@@ -274,11 +274,6 @@ const Game: React.FC<GameProps> = ({ initialGameMode = 'single', onGameModeChang
         
         <FeedbackDialog />
       </div>
-
-      <div className="flex items-center mb-4">
-        <GameInstructions gameMode={gameMode} />
-        <FeedbackDialog />
-      </div>
       <div className="relative">
         <GameOverlay
           gameState={gameState}

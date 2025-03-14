@@ -35,6 +35,7 @@ const FeedbackDialog = () => {
               email: mail@nicpavao.com<br />
               x.com: @BattleTronGame
             </div>
+            <br />
             Thank you for making Battle Tron better!
           </AlertDialogDescription>
         </AlertDialogHeader>
